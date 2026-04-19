@@ -1376,6 +1376,27 @@
       );
     }
 
+    function Toast({ msg, type, onDone }) {
+      useEffect(() => {
+        const t = setTimeout(onDone, 6000);
+        return () => clearTimeout(t);
+      }, []);
+      const bg = type === 'trig'
+        ? 'rgba(16,185,129,0.18)' : 'rgba(245,158,11,0.18)';
+      const border = type === 'trig'
+        ? 'rgba(16,185,129,0.4)' : 'rgba(245,158,11,0.4)';
+      return (
+        <div className="fixed top-4 left-1/2 anim-slide-up"
+             style={{transform:'translateX(-50%)',zIndex:9999,maxWidth:'480px',width:'calc(100vw - 32px)'}}>
+          <div className="rounded-2xl px-4 py-3 flex items-start gap-3 shadow-2xl"
+               style={{background:bg,border:`1px solid ${border}`,backdropFilter:'blur(20px)'}}>
+            <p className="flex-1 text-sm font-medium text-white leading-snug">{msg}</p>
+            <button onClick={onDone} className="text-white/40 hover:text-white/80 text-lg leading-none flex-shrink-0">✕</button>
+          </div>
+        </div>
+      );
+    }
+
     function BallCard({ ball, rank }) {
       const [imgErr, setImgErr] = useState(false);
       return (
@@ -1590,6 +1611,7 @@
       const [showBalls,      setShowBalls]      = useState(false);
       const [showSync,       setShowSync]       = useState(false);
       const [showIdentifier, setShowIdentifier] = useState(false);
+      const [toast,          setToast]          = useState(null); // {msg, type, key}
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
 
@@ -1677,9 +1699,11 @@
               if (ph === 'PRIMING') {
                 playSound('priming', soundR.current);
                 if (notifR.current) fireNotif('🟡 Priming Started', 'Send a sentence now to prime the spawn!');
+                setToast({ msg: '🟡 Priming started — send a sentence!', type: 'prime', key: Date.now() });
               } else if (ph === 'TRIGGERING') {
                 playSound('triggering', soundR.current);
                 if (notifR.current) fireNotif('🟢 TRIGGERING!', 'Ball window is OPEN. Send now!');
+                setToast({ msg: '🟢 TRIGGERING — send now!', type: 'trig', key: Date.now() });
               }
             }
             if (ph === 'PRIMING' || ph === 'TRIGGERING') tickR.current = 1;
@@ -1698,6 +1722,7 @@
               if (!standbyR.current) {
                 playSound('sentence', soundR.current);
                 if (notifR.current && ph === 'TRIGGERING') fireNotif('🟢 Send Now!', s);
+                setToast({ msg: (ph === 'TRIGGERING' ? '🟢 ' : '🟡 ') + s, type: ph === 'TRIGGERING' ? 'trig' : 'prime', key: Date.now() });
               }
               tickR.current = 60; setTick(60);
             }
@@ -1966,6 +1991,11 @@
 
             </main>
           </div>
+
+          {/* Toast — renders above all modals */}
+          {toast && (
+            <Toast key={toast.key} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)} />
+          )}
 
           {/* Modals */}
           {showBalls      && <BallModal        onClose={()=>setShowBalls(false)} />}
