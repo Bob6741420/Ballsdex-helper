@@ -770,6 +770,376 @@
     ];
 
     /* ═══════════════════════════════════════════════════════════════
+       BALL IMAGE DATA
+    ═══════════════════════════════════════════════════════════════ */
+    const BALL_IMAGE_MAP = {
+      "British Empire":"https://static.wikitide.net/ballsdexwiki/thumb/1/12/British_Empire_Spawn.png/1200px-British_Empire_Spawn.png",
+      "Reichtangle":"https://static.wikitide.net/ballsdexwiki/5/5e/Reichtangle-Spawn-Image.png",
+      "Russian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/9/9b/Russian_Empire_Spawn_Art.png/300px-Russian_Empire_Spawn_Art.png",
+      "Mongol Empire":"https://static.wikitide.net/ballsdexwiki/thumb/0/09/Mongol-Empire-Spawn.png/1200px-Mongol-Empire-Spawn.png",
+      "Kalmar Union":"https://static.wikitide.net/ballsdexwiki/c/c9/Kalmar_Union_New_Art.png",
+      "Roman Empire":"https://static.wikitide.net/ballsdexwiki/thumb/0/01/Roman_Empire_Spawn_Art.png/1200px-Roman_Empire_Spawn_Art.png",
+      "Papal States":"https://static.wikitide.net/ballsdexwiki/thumb/1/13/Papal_states_spawn.png/1200px-Papal_states_spawn.png",
+      "Polish-Lithuanian Commonwealth":"https://static.wikitide.net/ballsdexwiki/2/23/PLCspawn.png",
+      "Qin Dynasty":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "German Empire":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Han Dynasty":"https://static.wikitide.net/ballsdexwiki/thumb/2/2d/Han_Dynasty_Spawn_Art.png/960px-Han_Dynasty_Spawn_Art.png",
+      "Holy Roman Empire":"https://static.wikitide.net/ballsdexwiki/d/db/HREspawn.png",
+      "Akkadian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/b/b2/Akkadian_Empire_Spawn_Art.png/1200px-Akkadian_Empire_Spawn_Art.png",
+      "Austria-Hungary":"https://static.wikitide.net/ballsdexwiki/thumb/b/bc/Austria-Hungary-spawn.png/1200px-Austria-Hungary-spawn.png",
+      "Hunnic Empire":"https://static.wikitide.net/ballsdexwiki/5/58/Hunnic_spawn.png",
+      "Japanese Empire":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Republic of China":"https://static.wikitide.net/ballsdexwiki/thumb/a/a1/Republic_of_China_spawn_art.png/1196px-Republic_of_China_spawn_art.png",
+      "Soviet Union":"https://static.wikitide.net/ballsdexwiki/2/23/Soviet_union_spawn.png",
+      "Tokugawa Shogunate":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "United States":"https://static.wikitide.net/ballsdexwiki/thumb/5/55/Ballsdex_USA_Spawn_Art.png/1200px-Ballsdex_USA_Spawn_Art.png",
+      "Vatican":"https://static.wikitide.net/ballsdexwiki/e/e7/Vatican_spawn_art.png",
+      "Republic of Texas":"https://static.wikitide.net/ballsdexwiki/3/32/Texas_Spawn_Art.png",
+      "Russia":"https://static.wikitide.net/ballsdexwiki/thumb/b/b7/Russia_Spawn.png/1200px-Russia_Spawn.png",
+      "Gupta Empire":"https://static.wikitide.net/ballsdexwiki/a/a2/Gupta_Empire_Spawn_Art.png",
+      "China":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Austrian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/0/0e/New_New_Austrian_Empire_Spawn_Art.png/1200px-New_New_Austrian_Empire_Spawn_Art.png",
+      "Joseon":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Ancient Troy":"https://static.wikitide.net/ballsdexwiki/thumb/e/ef/Ancient_Troy_Spawn_Art.png/1200px-Ancient_Troy_Spawn_Art.png",
+      "India":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Ancient Greece":"https://static.wikitide.net/ballsdexwiki/thumb/b/b8/Ancient_Greece_Spawn_Art.png/1200px-Ancient_Greece_Spawn_Art.png",
+      "Japan":"https://static.wikitide.net/ballsdexwiki/9/9a/New_Japan_Spawn_Art.png",
+      "Korea":"https://static.wikitide.net/ballsdexwiki/4/45/Korea.png",
+      "Napoleonic France":"https://static.wikitide.net/ballsdexwiki/thumb/a/a5/New_Napoleonic_France_Spawnart.png/1198px-New_Napoleonic_France_Spawnart.png",
+      "Ottoman Empire":"https://static.wikitide.net/ballsdexwiki/thumb/1/1b/Ottomanempirespawnart.png/1200px-Ottomanempirespawnart.png",
+      "Phoenicia":"https://static.wikitide.net/ballsdexwiki/thumb/a/a6/Phoenicia_Spawn_Art.png/1200px-Phoenicia_Spawn_Art.png",
+      "BRICS":"https://static.wikitide.net/ballsdexwiki/thumb/4/4a/BRICS_Spawn_Art.png/1199px-BRICS_Spawn_Art.png",
+      "Republic of Venice":"https://static.wikitide.net/ballsdexwiki/c/cb/ROVSPAWN_11zon.png",
+      "South Korea":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "France":"https://static.wikitide.net/ballsdexwiki/thumb/d/de/France.png/1200px-France.png",
+      "Spanish Empire":"https://static.wikitide.net/ballsdexwiki/6/65/Spanish_Empire_Spawn_Art.png",
+      "United Kingdoms of Sweden and Norway":"https://static.wikitide.net/ballsdexwiki/thumb/9/98/United_Kingdoms_of_Norway_and_Sweden.png/1200px-United_Kingdoms_of_Norway_and_Sweden.png",
+      "Achaemenid Empire":"https://static.wikitide.net/ballsdexwiki/4/4b/Achaemenid_Empire_Spawn_Art.png",
+      "Macedon":"https://static.wikitide.net/ballsdexwiki/a/ab/Macedon.png",
+      "United Kingdom":"https://static.wikitide.net/ballsdexwiki/thumb/e/eb/Ukspawnart_2024-02-11_090343545.png/1200px-Ukspawnart_2024-02-11_090343545.png",
+      "Empire of Brazil":"https://static.wikitide.net/ballsdexwiki/5/5c/Empire_of_Brazil_Spawn_Art.png",
+      "Kingdom of Leinster":"https://static.wikitide.net/ballsdexwiki/thumb/3/36/Kingdom_of_Leinster_Spawn_Art.png/1200px-Kingdom_of_Leinster_Spawn_Art.png",
+      "Pakistan":"https://static.wikitide.net/ballsdexwiki/7/79/Pakistan_icon.png",
+      "Sumer":"https://static.wikitide.net/ballsdexwiki/2/27/Sumer_Spawn_Art.png",
+      "Ancient Egypt":"https://static.wikitide.net/ballsdexwiki/thumb/8/87/Ancient_Egypt_Spawn_Art.png/1197px-Ancient_Egypt_Spawn_Art.png",
+      "Brazil":"https://static.wikitide.net/ballsdexwiki/a/a9/Nt_nvHpBwXayuOCyVh.png",
+      "Byzantium":"https://static.wikitide.net/ballsdexwiki/b/b3/Byzantium_Spawn_Art.png",
+      "Greenland":"https://static.wikitide.net/ballsdexwiki/2/29/Greenland-spawn_art.png",
+      "Portuguese Empire":"https://static.wikitide.net/ballsdexwiki/3/35/PE-icon.png",
+      "Qing Dynasty":"https://static.wikitide.net/ballsdexwiki/thumb/d/da/Qing-spawn.png/1200px-Qing-spawn.png",
+      "British Raj":"https://static.wikitide.net/ballsdexwiki/e/eb/BritishRaj-spawn.png",
+      "Carthage":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Italy":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Kingdom of Italy":"https://static.wikitide.net/ballsdexwiki/b/be/Kingdom-of-Italy-Spawn-Image.png",
+      "Third French Republic":"https://static.wikitide.net/ballsdexwiki/thumb/a/a9/Third_French_Republic.png/1200px-Third_French_Republic.png",
+      "Egypt":"https://static.wikitide.net/ballsdexwiki/thumb/6/68/Egypt-spawn-march-22-2024.png/1199px-Egypt-spawn-march-22-2024.png",
+      "Russian Soviet Federative Socialist Republic":"https://static.wikitide.net/ballsdexwiki/a/a2/Russian_SFSR2.png",
+      "Turkey":"https://static.wikitide.net/ballsdexwiki/thumb/a/ac/Turkey-spawn.png/1198px-Turkey-spawn.png",
+      "French Empire":"https://static.wikitide.net/ballsdexwiki/thumb/c/ce/French_Empire_Spawn.png/1200px-French_Empire_Spawn.png",
+      "Iran":"https://static.wikitide.net/ballsdexwiki/thumb/d/d0/Iran_Spawn_Art.png/1200px-Iran_Spawn_Art.png",
+      "Kingdom of Greece":"https://static.wikitide.net/ballsdexwiki/e/eb/Kingdom_of_greece.png",
+      "Konbaung Empire":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "North German Confederation":"https://static.wikitide.net/ballsdexwiki/thumb/c/cb/North_German_Confederation_Spawn_Art.png/1200px-North_German_Confederation_Spawn_Art.png",
+      "African Union":"https://static.wikitide.net/ballsdexwiki/0/0d/The_old_card_art_for_African_Union.png",
+      "Arab League":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Confederate States":"https://static.wikitide.net/ballsdexwiki/thumb/8/81/Confederate_States_Spawn_Art.png/1200px-Confederate_States_Spawn_Art.png",
+      "Gaul":"https://static.wikitide.net/ballsdexwiki/thumb/c/c6/Gaul-spawn.png/1197px-Gaul-spawn.png",
+      "Germania":"https://static.wikitide.net/ballsdexwiki/e/e9/Germania-spawn.png",
+      "Indonesia":"https://static.wikitide.net/ballsdexwiki/thumb/6/66/Indonesia-spawn.png/1200px-Indonesia-spawn.png",
+      "Kingdom of Hungary":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Mayan Empire":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Yugoslavia":"https://static.wikitide.net/ballsdexwiki/thumb/1/10/Yugoslavia-spawn.png/1200px-Yugoslavia-spawn.png",
+      "Germany":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Australia":"https://static.wikitide.net/ballsdexwiki/c/ce/New_australia_spawn_art.png",
+      "Hong Kong":"https://static.wikitide.net/ballsdexwiki/thumb/8/86/Nt_YKGhSVOygENNMOo.png/1199px-Nt_YKGhSVOygENNMOo.png",
+      "Israel":"https://static.wikitide.net/ballsdexwiki/thumb/6/6a/Israel-spawn.png/1200px-Israel-spawn.png",
+      "Xiongnu":"https://static.wikitide.net/ballsdexwiki/7/78/Xiongnu-spawn.png",
+      "Swedish Empire":"https://static.wikitide.net/ballsdexwiki/a/a9/SWEspawn_11zon.png",
+      "Spain":"https://static.wikitide.net/ballsdexwiki/c/c3/Spain-pixel-icon.png",
+      "Olmecs":"https://static.wikitide.net/ballsdexwiki/thumb/5/57/Olmecs_Spawn_Art.png/1199px-Olmecs_Spawn_Art.png",
+      "Antarctica":"https://static.wikitide.net/ballsdexwiki/0/09/O.png",
+      "Ming Dynasty":"https://static.wikitide.net/ballsdexwiki/2/26/Mingspawn.png",
+      "Saudi Arabia":"https://static.wikitide.net/ballsdexwiki/b/bb/SaudiArabia-spawn.png",
+      "Xia Dynasty":"https://static.wikitide.net/ballsdexwiki/thumb/4/4e/Xia_Dynasty_Spawn_Art.png/1153px-Xia_Dynasty_Spawn_Art.png",
+      "Franks":"https://static.wikitide.net/ballsdexwiki/thumb/b/b6/Franks-spawn.png/1200px-Franks-spawn.png",
+      "League of Nations":"https://static.wikitide.net/ballsdexwiki/thumb/7/7c/LON.png/1200px-LON.png",
+      "Monaco":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Union of South Africa":"https://static.wikitide.net/ballsdexwiki/thumb/7/7c/UnionofSouthAfrica.png/1200px-UnionofSouthAfrica.png",
+      "Ukraine":"https://static.wikitide.net/ballsdexwiki/thumb/8/8f/Ukraine_Spawn_Image.png/1200px-Ukraine_Spawn_Image.png",
+      "Canada":"https://static.wikitide.net/ballsdexwiki/thumb/2/27/Canada_Spawn_Art.png/1200px-Canada_Spawn_Art.png",
+      "Kingdom of Two Sicilies":"https://static.wikitide.net/ballsdexwiki/d/dc/Spawnkots.png",
+      "Kingdom of Brandenburg":"https://static.wikitide.net/ballsdexwiki/thumb/7/72/Kingdom_of_Brandenburg_spawn_art.png/1195px-Kingdom_of_Brandenburg_spawn_art.png",
+      "Poland":"https://static.wikitide.net/ballsdexwiki/thumb/f/f5/Poland_Spawn_Art.png/988px-Poland_Spawn_Art.png",
+      "Sweden":"https://static.wikitide.net/ballsdexwiki/thumb/7/7e/Sweden-spawn.png/1200px-Sweden-spawn.png",
+      "Kingdom of Munster":"https://static.wikitide.net/ballsdexwiki/thumb/e/ec/Kingdom_of_Munster_Spawn_Art.png/1200px-Kingdom_of_Munster_Spawn_Art.png",
+      "Macau":"https://static.wikitide.net/ballsdexwiki/thumb/9/9d/Macau-spawn.png/1200px-Macau-spawn.png",
+      "Scotland":"https://static.wikitide.net/ballsdexwiki/0/00/Scotland-spawn.png",
+      "South Africa":"https://static.wikitide.net/ballsdexwiki/thumb/6/61/SouthAfrica-spawn.png/1200px-SouthAfrica-spawn.png",
+      "Greece":"https://static.wikitide.net/ballsdexwiki/thumb/f/fd/Greece-spawn.png/1200px-Greece-spawn.png",
+      "Safavid Empire":"https://static.wikitide.net/ballsdexwiki/thumb/3/39/SafavidEmpire-spawn.png/1200px-SafavidEmpire-spawn.png",
+      "Vietnam":"https://static.wikitide.net/ballsdexwiki/thumb/2/28/Vietnam_spawnart.png/1200px-Vietnam_spawnart.png",
+      "Parthian Empire":"https://static.wikitide.net/ballsdexwiki/5/59/Parthian_Empire_Current_Spawn_Art.png",
+      "Thailand":"https://static.wikitide.net/ballsdexwiki/thumb/1/17/Thailand-spawn.png/1200px-Thailand-spawn.png",
+      "North Korea":"https://static.wikitide.net/ballsdexwiki/4/4a/The_current_spawn_art_for_North_Korea.png",
+      "England":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "European Union":"https://static.wikitide.net/ballsdexwiki/thumb/8/80/EU_SpawnArt.png/1200px-EU_SpawnArt.png",
+      "Francoist Spain":"https://static.wikitide.net/ballsdexwiki/thumb/8/8e/FrancoistSpain-spawn.png/1193px-FrancoistSpain-spawn.png",
+      "Manchukuo":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "NATO":"https://static.wikitide.net/ballsdexwiki/thumb/b/be/New_NATO_spawn_art.png/1200px-New_NATO_spawn_art.png",
+      "Republican Spain":"https://static.wikitide.net/ballsdexwiki/thumb/2/2f/RepublicanSpain-spawn.png/1200px-RepublicanSpain-spawn.png",
+      "United Arab Republic":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "United Nations":"https://static.wikitide.net/ballsdexwiki/f/f8/United_Nations.png",
+      "Warsaw Pact":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Weimar Republic":"https://static.wikitide.net/ballsdexwiki/thumb/6/64/Weimar_Republic_Spawn_Art.png/1200px-Weimar_Republic_Spawn_Art.png",
+      "Zhou Dynasty":"https://static.wikitide.net/ballsdexwiki/2/24/Zhou_SpawnArt.png",
+      "Argentine Confederation":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Armenian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/0/07/Armenian_Empire_Spawn_Art.png/1196px-Armenian_Empire_Spawn_Art.png",
+      "Assyrian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/f/f1/Assyrian_Empire_Spawn_Art.png/1200px-Assyrian_Empire_Spawn_Art.png",
+      "ASEAN":"https://static.wikitide.net/ballsdexwiki/thumb/5/5a/ASEAN_Spawn_Art.png/1200px-ASEAN_Spawn_Art.png",
+      "Kingdom of Hawaii":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Kingdom of Bali":"https://static.wikitide.net/ballsdexwiki/thumb/0/0f/Balispawn.png/1198px-Balispawn.png",
+      "Kingdom of Bora Bora":"https://static.wikitide.net/ballsdexwiki/thumb/c/c2/Bora2spawn.png/1200px-Bora2spawn.png",
+      "Yuan Dynasty":"https://static.wikitide.net/ballsdexwiki/b/b8/YuanDcard.png",
+      "Bavaria":"https://static.wikitide.net/ballsdexwiki/thumb/a/a2/Bavariaspawn.png/1200px-Bavariaspawn.png",
+      "Algeria":"https://static.wikitide.net/ballsdexwiki/7/7e/Algeria-spawn.png",
+      "Argentina":"https://static.wikitide.net/ballsdexwiki/thumb/9/9d/ArgentinaSpawnArt2.png/1200px-ArgentinaSpawnArt2.png",
+      "Bangladesh":"https://static.wikitide.net/ballsdexwiki/2/25/Bangladesh_spawn_art_png.png",
+      "Colombia":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Czechia":"https://static.wikitide.net/ballsdexwiki/e/e2/Czechia.png",
+      "Iraq":"https://static.wikitide.net/ballsdexwiki/thumb/f/f8/Iraq_spawn.png/1200px-Iraq_spawn.png",
+      "Malaysia":"https://static.wikitide.net/ballsdexwiki/thumb/0/05/Malaysia-spawn.png/1200px-Malaysia-spawn.png",
+      "Mexico":"https://static.wikitide.net/ballsdexwiki/thumb/0/03/Mexico-spawn.png/1199px-Mexico-spawn.png",
+      "Myanmar":"https://static.wikitide.net/ballsdexwiki/thumb/3/3f/Myanmar-spawn.png/1200px-Myanmar-spawn.png",
+      "Netherlands":"https://static.wikitide.net/ballsdexwiki/f/f5/Netherlands-spawn.png",
+      "Nigeria":"https://static.wikitide.net/ballsdexwiki/4/45/Nigeria-spawn.png",
+      "Norway":"https://static.wikitide.net/ballsdexwiki/b/b1/New_norway_spawn_art.png",
+      "Peru":"https://static.wikitide.net/ballsdexwiki/thumb/3/3a/Peru_ball.png/1200px-Peru_ball.png",
+      "Philippines":"https://static.wikitide.net/ballsdexwiki/thumb/1/12/Philippines_Spawn_Art.png/1200px-Philippines_Spawn_Art.png",
+      "Portugal":"https://static.wikitide.net/ballsdexwiki/e/e9/Portuga.png",
+      "Prussia":"https://static.wikitide.net/ballsdexwiki/thumb/f/f9/Spawn_art_for_Prussia.png/1200px-Spawn_art_for_Prussia.png",
+      "Romania":"https://static.wikitide.net/ballsdexwiki/thumb/5/57/Romania-spawn.png/1200px-Romania-spawn.png",
+      "Singapore":"https://static.wikitide.net/ballsdexwiki/thumb/0/04/Image_2024-10-14_102353374.png/1198px-Image_2024-10-14_102353374.png",
+      "Switzerland":"https://static.wikitide.net/ballsdexwiki/1/1d/Switzerland-icon.png",
+      "Syria":"https://static.wikitide.net/ballsdexwiki/thumb/c/c5/Syria_Spawn_Art.png/1200px-Syria_Spawn_Art.png",
+      "Tuvalu":"https://static.wikitide.net/ballsdexwiki/thumb/4/49/Tuvaluspawn.png/1200px-Tuvaluspawn.png",
+      "United Arab Emirates":"https://static.wikitide.net/ballsdexwiki/d/dd/UAE-icon.png",
+      "Venezuela":"https://static.wikitide.net/ballsdexwiki/9/9d/Venezuela_spawn.png",
+      "Kingdom of Cao Wei":"https://static.wikitide.net/ballsdexwiki/thumb/8/80/Kingdom_of_Cao_Wei_Spawn_Art.png/1200px-Kingdom_of_Cao_Wei_Spawn_Art.png",
+      "Kingdom of Shu Han":"https://static.wikitide.net/ballsdexwiki/a/ae/Kingdom_of_Shu_Han_Spawn_Art.png",
+      "Kingdom of Sun Wu":"https://static.wikitide.net/ballsdexwiki/thumb/3/31/Kingdom_of_Sun_Wu_Spawn_Art.png/1200px-Kingdom_of_Sun_Wu_Spawn_Art.png",
+      "Mali Empire":"https://static.wikitide.net/ballsdexwiki/6/6e/MaliEspawnwebp.png",
+      "Ukrainian Soviet Socialist Republic":"https://static.wikitide.net/ballsdexwiki/thumb/2/27/UkrainianSSR-spawn.png/1200px-UkrainianSSR-spawn.png",
+      "Federal Republic of Central America":"https://static.wikitide.net/ballsdexwiki/2/22/Frocaspawn.png",
+      "Ancient Athens":"https://static.wikitide.net/ballsdexwiki/thumb/8/87/Ancient_Athens_spawn_art.png/1200px-Ancient_Athens_spawn_art.png",
+      "Ancient Sparta":"https://static.wikitide.net/ballsdexwiki/c/c5/Ancient_Sparta_Spawn.png",
+      "Babylon":"https://static.wikitide.net/ballsdexwiki/thumb/3/34/Babylon.png/1200px-Babylon.png",
+      "Czechoslovakia":"https://static.wikitide.net/ballsdexwiki/thumb/9/93/Czechoslovakia_spawn_art.png/1200px-Czechoslovakia_spawn_art.png",
+      "Ethiopian Empire":"https://static.wikitide.net/ballsdexwiki/thumb/f/f6/Eespawn.png/1200px-Eespawn.png",
+      "French Indochina":"https://static.wikitide.net/ballsdexwiki/4/42/French-Indochina-Spawn-Image.png",
+      "Nauru":"https://static.wikitide.net/ballsdexwiki/thumb/0/09/Nauruspawn.png/1200px-Nauruspawn.png",
+      "Numidia":"https://static.wikitide.net/ballsdexwiki/0/09/Numidia-Spawn-Image.png",
+      "Quebec":"https://static.wikitide.net/ballsdexwiki/0/06/Quebec.png",
+      "Siam":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "South Vietnam":"https://static.wikitide.net/ballsdexwiki/1/14/South_Vietnam_spawn.png",
+      "Taiwan":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Wales":"https://static.wikitide.net/ballsdexwiki/d/d6/Walesspawnart.png",
+      "West Germany":"https://static.wikitide.net/ballsdexwiki/thumb/9/90/West_Germany_Spawn.png/1197px-West_Germany_Spawn.png",
+      "Kingdom of Egypt":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Mughal Empire":"https://static.wikitide.net/ballsdexwiki/f/fe/MEspawn.png",
+      "Angola":"https://static.wikitide.net/ballsdexwiki/6/6c/Angola-spawn.png",
+      "Austria":"https://static.wikitide.net/ballsdexwiki/thumb/8/86/Austria-spawn-february-4-2024.png/1200px-Austria-spawn-february-4-2024.png",
+      "Azerbaijan":"https://static.wikitide.net/ballsdexwiki/2/23/Azerbaijan_spawn.png",
+      "Bahamas":"https://static.wikitide.net/ballsdexwiki/c/c6/Bahamas-Spawn-Image.png",
+      "Belarus":"https://static.wikitide.net/ballsdexwiki/8/8f/Belarus_spawn_art.png",
+      "Belgium":"https://static.wikitide.net/ballsdexwiki/e/e3/Nt_NEEbgoltDQDXdro.png",
+      "Bolivia":"https://static.wikitide.net/ballsdexwiki/thumb/3/38/Bolivia.png/1197px-Bolivia.png",
+      "Bulgaria":"https://static.wikitide.net/ballsdexwiki/thumb/f/f4/Bulgaria.png/1200px-Bulgaria.png",
+      "Chile":"https://static.wikitide.net/ballsdexwiki/e/e7/Chile-spawn.png",
+      "Croatia":"https://static.wikitide.net/ballsdexwiki/thumb/a/a9/Croatia_Spawn_Art.png/1200px-Croatia_Spawn_Art.png",
+      "Cuba":"https://static.wikitide.net/ballsdexwiki/1/14/Cuba_spawn.png",
+      "Cyprus":"https://static.wikitide.net/ballsdexwiki/thumb/1/18/Cyprus_spawn_2024-10-15_084241475.png/1184px-Cyprus_spawn_2024-10-15_084241475.png",
+      "Denmark":"https://static.wikitide.net/ballsdexwiki/0/05/Denmark_2024-10-15_011641548.png",
+      "Democratic Republic of the Congo":"https://static.wikitide.net/ballsdexwiki/thumb/2/27/DRC_spawn.png/1200px-DRC_spawn.png",
+      "Ecuador":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Ethiopia":"https://static.wikitide.net/ballsdexwiki/thumb/5/53/Ethiopia-Spawn-Image.png/1200px-Ethiopia-Spawn-Image.png",
+      "Finland":"https://static.wikitide.net/ballsdexwiki/thumb/6/6c/Finland_spawn_10_oct_2024.png/1200px-Finland_spawn_10_oct_2024.png",
+      "Hungary":"https://static.wikitide.net/ballsdexwiki/thumb/2/29/Hungary_spawn_art.png/816px-Hungary_spawn_art.png",
+      "Iberian Union":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Jordan":"https://static.wikitide.net/ballsdexwiki/thumb/a/a2/Jordan-spawn.png/1197px-Jordan-spawn.png",
+      "Kazakhstan":"https://static.wikitide.net/ballsdexwiki/thumb/0/0e/Kazakhstan.png/1200px-Kazakhstan.png",
+      "Kenya":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Kuwait":"https://static.wikitide.net/ballsdexwiki/thumb/8/8a/Kuwait_spawn.png/1200px-Kuwait_spawn.png",
+      "Libya":"https://static.wikitide.net/ballsdexwiki/f/ff/Libyaspawn.png",
+      "Morocco":"https://static.wikitide.net/ballsdexwiki/thumb/e/e4/Morocco.png/1196px-Morocco.png",
+      "North Vietnam":"https://static.wikitide.net/ballsdexwiki/d/d6/North_vietnam_icon.png",
+      "Oman":"https://static.wikitide.net/ballsdexwiki/thumb/1/17/Oman_spawn_art.png/1200px-Oman_spawn_art.png",
+      "Qatar":"https://static.wikitide.net/ballsdexwiki/thumb/8/81/Qatar.png/1198px-Qatar.png",
+      "San Marino":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Serbia":"https://static.wikitide.net/ballsdexwiki/2/2d/Serbiaspawn.png",
+      "Slovakia":"https://static.wikitide.net/ballsdexwiki/thumb/1/1c/Slovakia_SpawnArt.png/1200px-Slovakia_SpawnArt.png",
+      "Sri Lanka":"https://static.wikitide.net/ballsdexwiki/thumb/0/05/SriLankaspawn.png/1200px-SriLankaspawn.png",
+      "Sudan":"https://static.wikitide.net/ballsdexwiki/thumb/3/38/Sudan.png/1200px-Sudan.png",
+      "Tunisia":"https://static.wikitide.net/ballsdexwiki/0/08/Tunisia.png",
+      "Turkmenistan":"https://static.wikitide.net/ballsdexwiki/thumb/e/e7/Turkmenistanspawn.png/1200px-Turkmenistanspawn.png",
+      "Uzbekistan":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Yemen":"https://static.wikitide.net/ballsdexwiki/c/cc/Yemen_spawn.png",
+      "Republic of New Granada":"https://static.wikitide.net/ballsdexwiki/thumb/a/a2/Republic_of_New_Granada_spawnart.png/1200px-Republic_of_New_Granada_spawnart.png",
+      "Faroe Islands":"https://static.wikitide.net/ballsdexwiki/thumb/d/d9/Faroe_Islands_spawnart.png/1200px-Faroe_Islands_spawnart.png",
+      "Trinidad and Tobago":"https://static.wikitide.net/ballsdexwiki/thumb/1/1f/Trinidad_and_Tobago_spawn_art.png/1199px-Trinidad_and_Tobago_spawn_art.png",
+      "Orange Free State":"https://static.wikitide.net/ballsdexwiki/2/2a/Ofs.png",
+      "East Germany":"https://static.wikitide.net/ballsdexwiki/thumb/2/29/East_Germany_Spawn_Art.png/1200px-East_Germany_Spawn_Art.png",
+      "Emirate of Nejd":"https://static.wikitide.net/ballsdexwiki/thumb/1/18/Nejdspawn.png/1200px-Nejdspawn.png",
+      "Free France":"https://static.wikitide.net/ballsdexwiki/f/f5/Free_France_Spawn_Art.png",
+      "Golden Horde":"https://static.wikitide.net/ballsdexwiki/thumb/7/7c/GHspawn.png/1200px-GHspawn.png",
+      "Jamaica":"https://static.wikitide.net/ballsdexwiki/e/e7/Jamaica.png",
+      "Maldives":"https://static.wikitide.net/ballsdexwiki/thumb/d/d5/Maldives_Spawn_Art.png/1200px-Maldives_Spawn_Art.png",
+      "Northern Ireland":"https://static.wikitide.net/ballsdexwiki/thumb/9/9d/Northern_Ireland_spawn_art.png/1136px-Northern_Ireland_spawn_art.png",
+      "Tibet":"https://static.wikitide.net/ballsdexwiki/thumb/5/5a/Nt_rwKUENyLZRSJcwe.png/1200px-Nt_rwKUENyLZRSJcwe.png",
+      "Vichy France":"https://static.wikitide.net/ballsdexwiki/thumb/e/ec/Vichy_France.png/1200px-Vichy_France.png",
+      "Andorra":"https://static.wikitide.net/ballsdexwiki/thumb/5/5c/Nt_yXUeDTBxTWrUgjT.png/1200px-Nt_yXUeDTBxTWrUgjT.png",
+      "Brunei":"https://static.wikitide.net/ballsdexwiki/thumb/2/21/Brunei_spawn.png/1200px-Brunei_spawn.png",
+      "Byelorussian Soviet Socialist Republic":"https://static.wikitide.net/ballsdexwiki/thumb/8/85/BSSR-spawn.png/1200px-BSSR-spawn.png",
+      "Grand Duchy of Tuscany":"https://static.wikitide.net/ballsdexwiki/thumb/b/b0/GDoT-spawn.png/1200px-GDoT-spawn.png",
+      "Khedivate of Egypt":"https://static.wikitide.net/ballsdexwiki/thumb/7/7c/KhedivateOfEgypt-spawn.png/1200px-KhedivateOfEgypt-spawn.png",
+      "Micronesia":"https://static.wikitide.net/ballsdexwiki/9/93/MicronesiaSpawnart.png",
+      "Tonga":"https://static.wikitide.net/ballsdexwiki/thumb/6/6f/Tonga_spawn.png/1200px-Tonga_spawn.png",
+      "Khmer Empire":"https://static.wikitide.net/ballsdexwiki/7/79/Khmer.png",
+      "Barbados":"https://static.wikitide.net/ballsdexwiki/thumb/e/e5/Barbados_spawnart.png/1200px-Barbados_spawnart.png",
+      "Kingdom of Saxony":"https://static.wikitide.net/ballsdexwiki/thumb/6/69/Kingdom_of_Saxony_Spawn.png/1196px-Kingdom_of_Saxony_Spawn.png",
+      "Marshall Islands":"https://static.wikitide.net/ballsdexwiki/thumb/a/a7/Marshall_Islands_Spawn_Art.png/1200px-Marshall_Islands_Spawn_Art.png",
+      "Armenia":"https://static.wikitide.net/ballsdexwiki/thumb/b/b9/Armenia_SpawnArt.png/1200px-Armenia_SpawnArt.png",
+      "Bahrain":"https://static.wikitide.net/ballsdexwiki/thumb/5/53/Bahrainwildspawnart.png/1193px-Bahrainwildspawnart.png",
+      "Cambodia":"https://static.wikitide.net/ballsdexwiki/3/38/Cambodia_Spawn_2.png",
+      "Chad":"https://static.wikitide.net/ballsdexwiki/thumb/4/44/Chad_Flag.png/1200px-Chad_Flag.png",
+      "Congo Free State":"https://static.wikitide.net/ballsdexwiki/thumb/d/dc/Congo_Free_State_SpawnArt.png/1199px-Congo_Free_State_SpawnArt.png",
+      "Equatorial Guinea":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Fatimid Caliphate":"https://static.wikitide.net/ballsdexwiki/thumb/0/01/FatimidCaliphate-spawn.png/1200px-FatimidCaliphate-spawn.png",
+      "Georgia":"https://static.wikitide.net/ballsdexwiki/thumb/0/08/Georgia_SpawnArt.png/1200px-Georgia_SpawnArt.png",
+      "Ghana":"https://static.wikitide.net/ballsdexwiki/1/1b/Ghana_SpawnArt.png",
+      "Guatemala":"https://static.wikitide.net/ballsdexwiki/c/c8/Guatemala_spawn_2024-10-15_024235491.png",
+      "Guyana":"https://static.wikitide.net/ballsdexwiki/thumb/6/61/Guyana_Spawn_Art.png/1139px-Guyana_Spawn_Art.png",
+      "Ireland":"https://static.wikitide.net/ballsdexwiki/1/1a/New_Ireland_Spawn_Art.png",
+      "Kyrgyzstan":"https://static.wikitide.net/ballsdexwiki/thumb/d/d4/Kyrgyzstan_Spawn.png/1200px-Kyrgyzstan_Spawn.png",
+      "Latvia":"https://static.wikitide.net/ballsdexwiki/6/65/Latvia_spawn_art.png",
+      "Lithuania":"https://static.wikitide.net/ballsdexwiki/6/63/Lithuania-spawn.png",
+      "Mali":"https://static.wikitide.net/ballsdexwiki/e/e7/Mali_Spawn_Art.png",
+      "Malta":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Mongolia":"https://static.wikitide.net/ballsdexwiki/9/9a/Mongolia_spawn_2024-10-15_043715113.png",
+      "New Zealand":"https://static.wikitide.net/ballsdexwiki/thumb/e/e4/New_Zealand_Spawn.png/1200px-New_Zealand_Spawn.png",
+      "Samoa":"https://static.wikitide.net/ballsdexwiki/thumb/f/f6/Samoa_spawn.png/1194px-Samoa_spawn.png",
+      "Slovenia":"https://static.wikitide.net/ballsdexwiki/f/fc/Slovenia_spawn_art.png",
+      "Togo":"https://static.wikitide.net/ballsdexwiki/c/c5/Togo-Spawn-Image.png",
+      "Uganda":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Uruguay":"https://static.wikitide.net/ballsdexwiki/2/29/Uruguay.png",
+      "Zambia":"https://static.wikitide.net/ballsdexwiki/thumb/5/5f/Zambai_spawn_2024-10-15_015623413.png/1200px-Zambai_spawn_2024-10-15_015623413.png",
+      "Zimbabwe":"https://static.wikitide.net/ballsdexwiki/8/8f/Zimbabwe_spawn_art.png",
+      "Duchy of Limburg":"https://static.wikitide.net/ballsdexwiki/thumb/2/2b/Dolimburgspawn.png/999px-Dolimburgspawn.png",
+      "Malawi":"https://static.wikitide.net/ballsdexwiki/thumb/0/08/Malawi.png/1200px-Malawi.png",
+      "Kingdom of Sardinia":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Rashidi Emirate":"https://static.wikitide.net/ballsdexwiki/thumb/d/d5/Rashidi_spawn.png/1199px-Rashidi_spawn.png",
+      "Costa Rica":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Dominica":"https://static.wikitide.net/ballsdexwiki/thumb/0/05/Dominicaspawn.png/1199px-Dominicaspawn.png",
+      "Guinea-Bissau":"https://static.wikitide.net/ballsdexwiki/thumb/1/1b/Guineabissauspawn.png/1198px-Guineabissauspawn.png",
+      "Sao Tome and Principe":"https://static.wikitide.net/ballsdexwiki/3/34/Seotome_spawn.png",
+      "Tannu Tuva":"https://static.wikitide.net/ballsdexwiki/1/17/Tannutuva.png",
+      "Free City of Frankfurt":"https://static.wikitide.net/ballsdexwiki/thumb/2/26/FcoF_spawnart.png/1196px-FcoF_spawnart.png",
+      "Kingdom of Iberia":"https://static.wikitide.net/ballsdexwiki/thumb/7/74/Kingdom_of_Iberia_Spawn_Art.png/1200px-Kingdom_of_Iberia_Spawn_Art.png",
+      "Seychelles":"https://static.wikitide.net/ballsdexwiki/thumb/6/67/Seychellesspawn.png/1200px-Seychellesspawn.png",
+      "Afghanistan":"https://static.wikitide.net/ballsdexwiki/thumb/e/e9/Afghanistan_Spawn_Art.png/1200px-Afghanistan_Spawn_Art.png",
+      "Albania":"https://static.wikitide.net/ballsdexwiki/c/c8/Albaniaspawn.png",
+      "Belize":"https://static.wikitide.net/ballsdexwiki/2/2f/New_Belize_Spawn_Art.png",
+      "Bosnia":"https://static.wikitide.net/ballsdexwiki/thumb/d/d4/Bosniaspawn.png/1200px-Bosniaspawn.png",
+      "Botswana":"https://static.wikitide.net/ballsdexwiki/thumb/6/6e/Botswanaspawn.png/1200px-Botswanaspawn.png",
+      "Cameroon":"https://static.wikitide.net/ballsdexwiki/thumb/e/e6/Cameroonspawn.png/755px-Cameroonspawn.png",
+      "Ceylon":"https://static.wikitide.net/ballsdexwiki/2/2a/Ceylon_spawn_art.png",
+      "Côte d'Ivoire":"https://static.wikitide.net/ballsdexwiki/a/a5/Cote_d%27ivoire.png",
+      "Dominican Republic":"https://static.wikitide.net/ballsdexwiki/thumb/4/4d/Dominican_republic.png/1200px-Dominican_republic.png",
+      "Eritrea":"https://static.wikitide.net/ballsdexwiki/thumb/c/cc/Eritreaspawn.png/1200px-Eritreaspawn.png",
+      "Estonia":"https://static.wikitide.net/ballsdexwiki/thumb/e/e0/EstoniaSpawnArt6.png/1200px-EstoniaSpawnArt6.png",
+      "Eswatini":"https://static.wikitide.net/ballsdexwiki/c/c4/Eswatiniicon.png",
+      "Fiji":"https://static.wikitide.net/ballsdexwiki/thumb/c/c1/Fiji.png/1193px-Fiji.png",
+      "Free City of Danzig":"https://static.wikitide.net/ballsdexwiki/thumb/6/68/FCO_Danzig_spawn_art_new.png/1200px-FCO_Danzig_spawn_art_new.png",
+      "Gambia":"https://static.wikitide.net/ballsdexwiki/a/aa/Gambia_spawn_art.png",
+      "Haiti":"https://static.wikitide.net/ballsdexwiki/1/15/Haitispawn.png",
+      "Honduras":"https://static.wikitide.net/ballsdexwiki/6/6b/Hondurasspawn.png",
+      "Khiva":"https://static.wikitide.net/ballsdexwiki/thumb/a/ac/Khiva_spawn_art.png/1200px-Khiva_spawn_art.png",
+      "Laos":"https://static.wikitide.net/ballsdexwiki/thumb/d/d1/Laos_spanw.png/1200px-Laos_spanw.png",
+      "Lebanon":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Liechtenstein":"https://static.wikitide.net/ballsdexwiki/thumb/6/6f/Liechtenstein.png/1193px-Liechtenstein.png",
+      "Moldova":"https://static.wikitide.net/ballsdexwiki/thumb/e/e0/Moldovaspawn.png/1196px-Moldovaspawn.png",
+      "Mossi Kingdoms":"https://static.wikitide.net/ballsdexwiki/thumb/0/05/Mossispawn.png/1200px-Mossispawn.png",
+      "Mozambique":"https://static.wikitide.net/ballsdexwiki/1/19/Mozambique.png",
+      "Nepal":"https://static.wikitide.net/ballsdexwiki/b/b8/Nepal-spawn.png",
+      "Nicaragua":"https://static.wikitide.net/ballsdexwiki/thumb/a/a3/Nicaraguaspawn.png/1200px-Nicaraguaspawn.png",
+      "Niger":"https://static.wikitide.net/ballsdexwiki/thumb/d/d3/Nigerspawn.png/1200px-Nigerspawn.png",
+      "Palestine":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Paraguay":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Saint Kitts and Nevis":"https://static.wikitide.net/ballsdexwiki/8/83/Saint_Kitts_and_Nevis_New_Spawn.png",
+      "Saint Lucia":"https://static.wikitide.net/ballsdexwiki/thumb/3/30/StLucia-spawn.png/1200px-StLucia-spawn.png",
+      "Somaliland":"https://static.wikitide.net/ballsdexwiki/thumb/4/4e/Somaliland_spawn_art_2024.png/1195px-Somaliland_spawn_art_2024.png",
+      "South Sudan":"https://static.wikitide.net/ballsdexwiki/thumb/e/e0/SouthSudanspawn.png/1200px-SouthSudanspawn.png",
+      "South Yemen":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Tajikistan":"https://static.wikitide.net/ballsdexwiki/6/62/Tajikistan_spawn.png",
+      "Tanzania":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Western Sahara":"https://static.wikitide.net/ballsdexwiki/thumb/1/1e/Westsaharaspawn.png/1200px-Westsaharaspawn.png",
+      "Peru-Bolivian Confederation":"https://static.wikitide.net/ballsdexwiki/8/8b/Peru-Bolivian_Confederation.png",
+      "Zapotecs":"https://static.wikitide.net/ballsdexwiki/thumb/0/0f/Zapotecs_Spawn_Art.png/1197px-Zapotecs_Spawn_Art.png",
+      "Cape Verde":"https://static.wikitide.net/ballsdexwiki/6/68/Cape_verde_icon.png",
+      "Grenada":"https://static.wikitide.net/ballsdexwiki/0/04/Grenadaicon.png",
+      "Guinea":"https://static.wikitide.net/ballsdexwiki/thumb/4/44/Guinea_spawn_2024-10-15_095733806.png/1200px-Guinea_spawn_2024-10-15_095733806.png",
+      "Palau":"https://static.wikitide.net/ballsdexwiki/thumb/6/6a/PalauSpawnArt.png/1200px-PalauSpawnArt.png",
+      "Solomon Islands":"https://static.wikitide.net/ballsdexwiki/thumb/5/54/Solomon_islands.png/1200px-Solomon_islands.png",
+      "St. Vincent and the Grenadines":"https://static.wikitide.net/ballsdexwiki/e/ee/St_icon_art.png",
+      "Vanuatu":"https://static.wikitide.net/ballsdexwiki/d/d4/Vanuatu-Spawn-Image.png",
+      "Principality of Moldavia":"https://static.wikitide.net/ballsdexwiki/thumb/3/33/PoM-spawn.png/1200px-PoM-spawn.png",
+      "Qajar Dynasty":"https://static.wikitide.net/ballsdexwiki/thumb/1/1a/Qajar_Dynasty_Spawn_Art.png/1200px-Qajar_Dynasty_Spawn_Art.png",
+      "Antigua and Barbuda":"https://static.wikitide.net/ballsdexwiki/thumb/3/31/A%26Bspawn.png/1200px-A%26Bspawn.png",
+      "Benin":"https://static.wikitide.net/ballsdexwiki/4/4d/Beninspawn.png",
+      "Bhutan":"https://static.wikitide.net/ballsdexwiki/5/5c/Bhutanball_2024-10-15_113139141.png",
+      "Burkina Faso":"https://static.wikitide.net/ballsdexwiki/c/c5/Burkinafaso.png",
+      "Burundi":"https://static.wikitide.net/ballsdexwiki/2/2e/Burundi-Spawn-Image.png",
+      "Central African Republic":"https://static.wikitide.net/ballsdexwiki/3/3e/CAR_spawn_art.png",
+      "Comoros":"https://static.wikitide.net/ballsdexwiki/thumb/2/27/Comoros_spawn_art.png/1196px-Comoros_spawn_art.png",
+      "El Salvador":"https://static.wikitide.net/ballsdexwiki/1/12/El_Salvador_Spawn_Art.png",
+      "Gabon":"https://static.wikitide.net/ballsdexwiki/thumb/e/e7/Gabon.png/1200px-Gabon.png",
+      "Hejaz":"https://static.wikitide.net/ballsdexwiki/thumb/6/69/Hejazspawn.png/1196px-Hejazspawn.png",
+      "Iceland":"https://static.wikitide.net/ballsdexwiki/a/a0/Iceland-Spawnart.png",
+      "Kiribati":"https://static.wikitide.net/ballsdexwiki/c/c0/Kiribati.png",
+      "Kosovo":"https://static.wikitide.net/ballsdexwiki/0/05/Iceland-Icon.png",
+      "Lesotho":"https://static.wikitide.net/ballsdexwiki/5/5d/Lesotho-Spawn-Image.png",
+      "Liberia":"https://static.wikitide.net/ballsdexwiki/thumb/d/d2/Liberia_SpawnArt.png/1199px-Liberia_SpawnArt.png",
+      "Luxembourg":"https://static.wikitide.net/ballsdexwiki/c/cf/Luxembourg_spawn_art.png",
+      "Madagascar":"https://static.wikitide.net/ballsdexwiki/9/9f/Madagascarspawn.png",
+      "Majapahit":"https://static.wikitide.net/ballsdexwiki/0/0c/Majapahit.png",
+      "Mauritania":"https://static.wikitide.net/ballsdexwiki/thumb/1/1c/Mauritaniaspawn.png/1118px-Mauritaniaspawn.png",
+      "Mauritius":"https://static.wikitide.net/ballsdexwiki/thumb/f/f6/The_current_spawn_art_for_Mauritius.png/1200px-The_current_spawn_art_for_Mauritius.png",
+      "Montenegro":"https://static.wikitide.net/ballsdexwiki/8/8c/Montenegro.png",
+      "Namibia":"https://static.wikitide.net/ballsdexwiki/thumb/4/43/Namibia_Spawn_Art.png/1200px-Namibia_Spawn_Art.png",
+      "Nanda Empire":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "North Macedonia":"https://static.wikitide.net/ballsdexwiki/thumb/3/3b/Nmacedonia.png/1198px-Nmacedonia.png",
+      "Panama":"https://static.wikitide.net/ballsdexwiki/2/21/Panamaspawn.png",
+      "Papua New Guinea":"https://static.wikitide.net/ballsdexwiki/thumb/1/1a/Papua_New_Guinea_spawn_art.png/1199px-Papua_New_Guinea_spawn_art.png",
+      "Paris Commune":"https://static.wikitide.net/ballsdexwiki/9/91/Outdated_Image.png",
+      "Rwanda":"https://static.wikitide.net/ballsdexwiki/thumb/c/c1/Rwanda-Spawn-Art.png/1200px-Rwanda-Spawn-Art.png",
+      "Senegal":"https://static.wikitide.net/ballsdexwiki/thumb/5/5a/Senegal_spawn_art.png/1200px-Senegal_spawn_art.png",
+      "Sierra Leone":"https://static.wikitide.net/ballsdexwiki/7/7e/Sierra_Leone_Spawn.png",
+      "Somalia":"https://static.wikitide.net/ballsdexwiki/c/c0/Somalia_Spawn_Art.png",
+      "Suriname":"https://static.wikitide.net/ballsdexwiki/b/b6/Suriname_Spawn.png",
+      "Timor-Leste":"https://static.wikitide.net/ballsdexwiki/thumb/5/59/TimorLeste.png/1200px-TimorLeste.png",
+      "Dahomey":"https://static.wikitide.net/ballsdexwiki/f/f1/Dahomey.png",
+      "Djibouti":"https://static.wikitide.net/ballsdexwiki/4/47/Djibouti_spawn_art.png",
+    };
+
+    const BALL_IMAGES = (() => {
+      const byName = {};
+      BALLS.forEach(b => { byName[b.name.toLowerCase()] = b; });
+      return Object.entries(BALL_IMAGE_MAP).map(([name, url]) => {
+        const info = byName[name.toLowerCase()];
+        return { name, url, tier: info?.tier, rarity: info?.rarity };
+      }).sort((a, b) => (a.tier ?? 9999) - (b.tier ?? 9999) || a.name.localeCompare(b.name));
+    })();
+
+    /* ═══════════════════════════════════════════════════════════════
        UTILITIES
     ═══════════════════════════════════════════════════════════════ */
     const fmt = s => {
@@ -828,6 +1198,39 @@
 
     function rarityStyle(r) {
       return { Mythical:'text-purple-400 bg-purple-500/10 border-purple-500/20', Legendary:'text-amber-400 bg-amber-500/10 border-amber-500/20', Epic:'text-indigo-400 bg-indigo-500/10 border-indigo-500/20', Rare:'text-blue-400 bg-blue-500/10 border-blue-500/20', Uncommon:'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', Common:'text-slate-500 bg-slate-500/10 border-slate-500/20' }[r] || 'text-slate-500 bg-slate-500/10';
+    }
+
+    async function computeHistogram(src, crossOrigin) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        if (crossOrigin) img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = c.height = 32;
+          const ctx = c.getContext('2d');
+          try {
+            ctx.drawImage(img, 0, 0, 32, 32);
+            const { data } = ctx.getImageData(0, 0, 32, 32);
+            const hist = new Float32Array(512);
+            let total = 0;
+            for (let i = 0; i < data.length; i += 4) {
+              if (data[i+3] < 10) continue;
+              hist[Math.floor(data[i]/32)*64 + Math.floor(data[i+1]/32)*8 + Math.floor(data[i+2]/32)]++;
+              total++;
+            }
+            if (total > 0) for (let i = 0; i < hist.length; i++) hist[i] /= total;
+            resolve(hist);
+          } catch(e) { reject(e); }
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    function histDist(h1, h2) {
+      let d = 0;
+      for (let i = 0; i < h1.length; i++) d += Math.abs(h1[i] - h2[i]);
+      return d;
     }
 
     async function copyText(text) {
@@ -969,6 +1372,201 @@
       );
     }
 
+    function BallCard({ ball, rank }) {
+      const [loaded, setLoaded] = useState(false);
+      const [imgErr, setImgErr] = useState(false);
+      return (
+        <div title={ball.name} className="rounded-xl overflow-hidden card-lift"
+             style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
+          <div className="relative" style={{paddingBottom:'80%',background:'var(--s0)'}}>
+            {!imgErr ? (
+              <img src={ball.url} alt={ball.name}
+                   className="absolute inset-0 w-full h-full object-contain p-1"
+                   style={{opacity:loaded?1:0,transition:'opacity 0.2s'}}
+                   onLoad={()=>setLoaded(true)} onError={()=>setImgErr(true)} />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center opacity-20 text-lg">🌐</div>
+            )}
+            {!loaded && !imgErr && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full animate-spin"
+                     style={{border:'2px solid rgba(255,255,255,0.1)',borderTopColor:'rgba(255,255,255,0.4)'}} />
+              </div>
+            )}
+            {rank !== null && rank <= 5 && (
+              <div className="absolute top-1 right-1 text-white font-bold rounded px-1"
+                   style={{background:rank===1?'var(--indigo)':'var(--s2)',fontSize:'9px',
+                           color:rank===1?'white':'var(--muted)'}}>
+                #{rank}
+              </div>
+            )}
+          </div>
+          <div className="px-1.5 pb-1.5 pt-1">
+            <p className="text-xs text-white font-medium leading-tight truncate">{ball.name}</p>
+            {ball.rarity && (
+              <p className={`leading-tight truncate ${rarityStyle(ball.rarity).split(' ')[0]}`} style={{fontSize:'10px'}}>
+                T{ball.tier}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function IdentifierModal({ onClose }) {
+      const [uploadedUrl, setUploadedUrl] = useState(null);
+      const [query, setQuery] = useState('');
+      const [scores, setScores] = useState(null);
+      const [analyzing, setAnalyzing] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [corsOk, setCorsOk] = useState(true);
+      const fileRef = useRef(null);
+      const abortRef = useRef(false);
+
+      useEffect(() => () => { abortRef.current = true; }, []);
+
+      const handleFile = useCallback(async (file) => {
+        if (!file || !file.type.startsWith('image/')) return;
+        abortRef.current = true;
+        const url = URL.createObjectURL(file);
+        setUploadedUrl(url); setScores(null); setProgress(0); setAnalyzing(false);
+        await new Promise(r => setTimeout(r, 50));
+        abortRef.current = false;
+
+        let uploadedHist;
+        try { uploadedHist = await computeHistogram(url, false); }
+        catch { return; }
+
+        setAnalyzing(true);
+        const newScores = {};
+        let done = 0;
+        const batchSize = 8;
+        for (let i = 0; i < BALL_IMAGES.length; i += batchSize) {
+          if (abortRef.current) break;
+          const batch = BALL_IMAGES.slice(i, i + batchSize);
+          await Promise.all(batch.map(async ball => {
+            try {
+              const h = await computeHistogram(ball.url, true);
+              newScores[ball.name] = histDist(uploadedHist, h);
+            } catch { newScores[ball.name] = Infinity; }
+          }));
+          done += batch.length;
+          setProgress(Math.round((done / BALL_IMAGES.length) * 100));
+          setScores({ ...newScores });
+        }
+        if (!abortRef.current) {
+          const anyFinite = Object.values(newScores).some(v => v < Infinity);
+          setCorsOk(anyFinite);
+        }
+        setAnalyzing(false);
+      }, []);
+
+      const handleDrop = useCallback(e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }, [handleFile]);
+
+      const displayedBalls = useMemo(() => {
+        let list = [...BALL_IMAGES];
+        if (query) {
+          const q = query.toLowerCase();
+          list = list.filter(b => b.name.toLowerCase().includes(q));
+        } else if (scores) {
+          list.sort((a, b) => (scores[a.name] ?? Infinity) - (scores[b.name] ?? Infinity));
+        }
+        return list;
+      }, [query, scores]);
+
+      const topMatch = scores && !query && corsOk ? displayedBalls[0] : null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style={{background:'rgba(0,0,0,.88)',backdropFilter:'blur(12px)'}}
+             onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="glass2 rounded-2xl flex flex-col anim-slide-up"
+               style={{width:'min(960px,95vw)',maxHeight:'90vh'}}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
+              <div>
+                <h2 className="font-semibold text-white text-sm">🔍 Ball Identifier</h2>
+                <p className="text-xs mt-0.5 text-slate-600">Upload a spawn screenshot to auto-identify, or browse the gallery</p>
+              </div>
+              <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm"
+                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
+            </div>
+
+            {/* Upload row */}
+            <div className="flex gap-4 px-4 pt-4 pb-4 border-b flex-shrink-0" style={{borderColor:'var(--border)'}}>
+              <div onDrop={handleDrop} onDragOver={e=>e.preventDefault()} onClick={()=>fileRef.current?.click()}
+                   className="w-28 h-28 rounded-xl flex-shrink-0 flex flex-col items-center justify-center cursor-pointer border-2 border-dashed transition-colors"
+                   style={{borderColor:uploadedUrl?'rgba(99,102,241,0.5)':'var(--border-hi)',
+                           background:'var(--s1)',overflow:'hidden',position:'relative'}}>
+                {uploadedUrl
+                  ? <img src={uploadedUrl} className="absolute inset-0 w-full h-full object-contain p-1" />
+                  : (<><span className="text-2xl opacity-20">📷</span>
+                     <p className="text-xs text-slate-600 text-center mt-1 px-2 leading-tight">Drop or click to upload</p></>)
+                }
+                <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                       onChange={e=>handleFile(e.target.files[0])} />
+              </div>
+
+              <div className="flex-1 flex flex-col justify-center gap-2.5 min-w-0">
+                {!uploadedUrl && (
+                  <p className="text-sm text-slate-500">Upload a ball spawn screenshot to automatically identify it. Or type a name to search the gallery below.</p>
+                )}
+                {analyzing && (
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-slate-500">Analyzing images…</span>
+                      <span className="text-xs font-mono text-slate-600">{progress}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
+                      <div className="h-full rounded-full bar-fill transition-all duration-300"
+                           style={{width:`${progress}%`,background:'var(--indigo)'}} />
+                    </div>
+                  </div>
+                )}
+                {topMatch && !analyzing && (
+                  <div>
+                    <p className="text-xs uppercase tracking-widest font-semibold text-slate-600 mb-1.5">Best Match</p>
+                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                         style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.25)'}}>
+                      <img src={topMatch.url} className="w-8 h-8 object-contain rounded flex-shrink-0"
+                           onError={e=>e.target.style.display='none'} />
+                      <div>
+                        <p className="text-sm font-semibold text-white">{topMatch.name}</p>
+                        {topMatch.tier && <p className="text-xs text-slate-500">Tier {topMatch.tier} · {topMatch.rarity}</p>}
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-700 mt-1.5">Gallery sorted by visual similarity — scroll to see close matches.</p>
+                  </div>
+                )}
+                {uploadedUrl && scores && !analyzing && !corsOk && (
+                  <p className="text-xs text-slate-600">Could not compare images (CORS blocked). Browse the gallery below to find your ball.</p>
+                )}
+                {uploadedUrl && (
+                  <button onClick={()=>{abortRef.current=true;setUploadedUrl(null);setScores(null);setAnalyzing(false);setCorsOk(true);}}
+                          className="btn btn-ghost py-1 px-3 text-xs w-fit">✕ Clear</button>
+                )}
+              </div>
+            </div>
+
+            {/* Gallery */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 px-4 pb-4 pt-3">
+              <input className="inp text-sm mb-3 flex-shrink-0"
+                     placeholder={`Search ${BALL_IMAGES.length} balls by name…`}
+                     value={query} onChange={e=>setQuery(e.target.value)} autoFocus />
+              <div className="overflow-y-auto flex-1"
+                   style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(88px,1fr))',gap:'8px',alignContent:'start'}}>
+                {displayedBalls.map((ball, i) => (
+                  <BallCard key={ball.name} ball={ball} rank={scores && !query ? i+1 : null} />
+                ))}
+                {displayedBalls.length === 0 && (
+                  <div className="col-span-full text-center py-12 text-slate-600 text-sm">No results for "{query}"</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     /* ═══════════════════════════════════════════════════════════════
        APP
     ═══════════════════════════════════════════════════════════════ */
@@ -993,8 +1591,9 @@
       const [tick,        setTick]        = useState(60);
       const [feed,        setFeed]        = useState([]);
 
-      const [showBalls,   setShowBalls]   = useState(false);
-      const [showSync,    setShowSync]    = useState(false);
+      const [showBalls,      setShowBalls]      = useState(false);
+      const [showSync,       setShowSync]       = useState(false);
+      const [showIdentifier, setShowIdentifier] = useState(false);
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
 
@@ -1197,6 +1796,8 @@
               </span>
               <button onClick={()=>setShowBalls(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
                       style={{background:'var(--s2)',border:'1px solid var(--border)'}}>📖</button>
+              <button onClick={()=>setShowIdentifier(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
+                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>🔍</button>
               <button onClick={()=>setStandby(!standby)}
                       className={`btn px-3 py-1.5 text-xs font-semibold ${standby?'text-indigo-400':'text-slate-500 hover:text-white'}`}
                       style={{background:standby?'var(--indigo-dim)':'var(--s2)',border:`1px solid ${standby?'rgba(99,102,241,.3)':'var(--border)'}`}}>
@@ -1371,8 +1972,9 @@
           </div>
 
           {/* Modals */}
-          {showBalls && <BallModal onClose={()=>setShowBalls(false)} />}
-          {showSync  && <SyncModal onClose={()=>setShowSync(false)} onSync={sync} />}
+          {showBalls      && <BallModal        onClose={()=>setShowBalls(false)} />}
+          {showSync       && <SyncModal        onClose={()=>setShowSync(false)} onSync={sync} />}
+          {showIdentifier && <IdentifierModal  onClose={()=>setShowIdentifier(false)} />}
         </div>
       );
     }
