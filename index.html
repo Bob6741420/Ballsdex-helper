@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BallsDex Spawn Commander V2</title>
+
+  <!-- Fonts: Plus Jakarta Sans (UI) + JetBrains Mono (clock/code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bd: {
+              '0':  '#07080A',
+              '1':  '#0E0F14',
+              '2':  '#14151C',
+              '3':  '#1B1C25',
+              '4':  '#22232F',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18 + Babel (JSX transform, no build step) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* ── Design tokens ──────────────────────────────────────────── */
+    :root {
+      --bg:          #07080A;
+      --s0:          rgba(255,255,255,0.02);
+      --s1:          rgba(255,255,255,0.04);
+      --s2:          rgba(255,255,255,0.07);
+      --border:      rgba(255,255,255,0.07);
+      --border-hi:   rgba(255,255,255,0.13);
+      --indigo:      #6366F1;
+      --indigo-dim:  rgba(99,102,241,0.15);
+      --emerald:     #10B981;
+      --emerald-dim: rgba(16,185,129,0.15);
+      --amber:       #F59E0B;
+      --amber-dim:   rgba(245,158,11,0.15);
+      --orange:      #F97316;
+      --text:        #F1F5F9;
+      --sec:         #94A3B8;
+      --muted:       #475569;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body, #root {
+      height: 100%; overflow: hidden;
+      background: var(--bg);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+      opacity: 0.028;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 2px; }
+
+    /* Glass surfaces */
+    .glass  { background: var(--s0); border: 1px solid var(--border); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .glass2 { background: var(--s1); border: 1px solid var(--border-hi); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+
+    /* Inputs & selects */
+    .inp {
+      display: block; width: 100%;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 13px;
+      color: var(--text); font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .inp::placeholder { color: var(--muted); }
+    .inp:focus { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 3px rgba(99,102,241,0.08); }
+    select.inp { cursor: pointer; background-color: #1B1C25; color: #F1F5F9; }
+    select.inp option { background-color: #1B1C25; color: #F1F5F9; }
+
+    /* ── Base button ────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: inherit; font-weight: 600; border-radius: 12px;
+      border: 1px solid transparent; cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.15s ease, opacity 0.15s;
+      outline: none; position: relative; overflow: hidden;
+    }
+    .btn:focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; }
+
+    /* Ripple */
+    .btn .ripple {
+      position: absolute; border-radius: 50%;
+      transform: scale(0); background: rgba(255,255,255,0.18);
+      animation: rippleAnim 0.55s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+    /* ── CAUGHT button ──────────────────────────────────────────── */
+    .btn-caught {
+      background: linear-gradient(145deg, #059669 0%, #10B981 55%, #34D399 100%);
+      border: 1px solid rgba(52,211,153,0.3) !important;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.3), 0 1px 0 rgba(255,255,255,0.12) inset;
+      color: white;
+    }
+    .btn-caught::after {
+      content: ''; position: absolute; top: 0; left: -110%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      animation: shimmer 2.8s ease-in-out infinite;
+    }
+    .btn-caught:hover {
+      box-shadow: 0 6px 30px rgba(16,185,129,0.5), 0 1px 0 rgba(255,255,255,0.15) inset;
+      transform: translateY(-2px);
+    }
+    .btn-caught:active { transform: scale(0.96) translateY(0) !important; }
+
+    /* ── MISS button ────────────────────────────────────────────── */
+    .btn-miss {
+      background: rgba(249,115,22,0.07);
+      border: 1px solid rgba(249,115,22,0.22) !important;
+      color: #FB923C;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .btn-miss:hover {
+      background: rgba(249,115,22,0.14);
+      box-shadow: 0 0 22px rgba(249,115,22,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+    .btn-miss:active { transform: scale(0.96) !important; }
+
+    /* ── Ghost / secondary button ───────────────────────────────── */
+    .btn-ghost {
+      background: var(--s1);
+      border: 1px solid var(--border) !important;
+      color: var(--muted);
+    }
+    .btn-ghost:hover { background: var(--s2); color: var(--text); transform: translateY(-1px); }
+    .btn-ghost:active { transform: scale(0.96) !important; }
+
+    /* ── Copy button ────────────────────────────────────────────── */
+    .btn-copy {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09) !important;
+      color: #94A3B8; font-size: 12px;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.09); color: #F1F5F9; transform: translateY(-1px); }
+    .btn-copy.copied {
+      background: rgba(16,185,129,0.15);
+      border-color: rgba(16,185,129,0.3) !important;
+      color: #34D399;
+    }
+    .btn-copy:active { transform: scale(0.95) !important; }
+
+    /* ── Toggle switch ──────────────────────────────────────────── */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      background: var(--s1); border: 1px solid var(--border);
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .toggle-row:hover { background: var(--s2); }
+    .toggle-track {
+      width: 34px; height: 19px; border-radius: 10px; position: relative;
+      transition: background 0.25s;
+      flex-shrink: 0;
+    }
+    .toggle-track.on  { background: var(--emerald); box-shadow: 0 0 10px rgba(16,185,129,0.35); }
+    .toggle-track.off { background: rgba(255,255,255,0.1); }
+    .toggle-thumb {
+      position: absolute; top: 2px; width: 15px; height: 15px;
+      border-radius: 50%; background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      transition: left 0.25s cubic-bezier(0.68,-0.55,0.27,1.55);
+    }
+    .toggle-track.on  .toggle-thumb { left: 17px; }
+    .toggle-track.off .toggle-thumb { left: 2px; }
+
+    /* ── Animations ─────────────────────────────────────────────── */
+    @keyframes shimmer    { 0% { left:-110%; } 100% { left:200%; } }
+    @keyframes slideUp    { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideRight { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes fadeIn     { from { opacity:0; } to { opacity:1; } }
+    @keyframes primePulse { 0%,100% { opacity:.04; } 50% { opacity:.09; } }
+    @keyframes trigPulse  { 0%,100% { opacity:.05; } 50% { opacity:.12; } }
+    @keyframes ringPulse  { 0%,100% { box-shadow:0 0 0 0 rgba(16,185,129,.5); } 50% { box-shadow:0 0 0 16px rgba(16,185,129,0); } }
+    @keyframes gradRing   { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+    @keyframes pulseDot   { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(1.6); } }
+    @keyframes barShimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(300%); } }
+    @keyframes sentIn     { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes countIn    { from { opacity:0; transform:translateY(-6px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+    .anim-slide-up    { animation: slideUp    0.28s cubic-bezier(0.16,1,0.3,1); }
+    .anim-slide-right { animation: slideRight 0.28s cubic-bezier(0.16,1,0.3,1); }
+    .anim-fade-in     { animation: fadeIn     0.2s  ease-out; }
+    .anim-sent        { animation: sentIn     0.35s cubic-bezier(0.16,1,0.3,1); }
+    .anim-count       { animation: countIn    0.2s  ease-out; }
+
+    /* Phase ambient glows */
+    .phase-prime-bg::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(245,158,11,.22), transparent);
+      animation: primePulse 3.5s ease-in-out infinite;
+    }
+    .phase-trig-bg::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(16,185,129,.2), transparent);
+      animation: trigPulse 2s ease-in-out infinite;
+    }
+
+    /* Triggering card ring */
+    .trig-ring { animation: ringPulse 1.6s ease-in-out infinite; position: relative; }
+    .trig-ring::before {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; z-index: -1;
+      background: linear-gradient(135deg, #10B981, #34D399, #6EE7B7, #10B981);
+      background-size: 300% 300%;
+      animation: gradRing 3s ease infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; padding: 1px;
+    }
+
+    /* Phase dot indicator */
+    .phase-dot { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .phase-dot.pulsing { animation: pulseDot 1.8s ease-in-out infinite; }
+
+    /* Progress bar shimmer overlay */
+    .bar-fill { position: relative; overflow: hidden; }
+    .bar-fill::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+      animation: barShimmer 2.2s ease-in-out infinite;
+    }
+
+    /* Card hover lift */
+    .card-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-lift:hover { transform: translateY(-1px); box-shadow: 0 8px 40px rgba(0,0,0,0.35); }
+
+    /* Section label accent */
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 10px;
+    }
+    .section-label::before {
+      content: ''; display: block; width: 3px; height: 10px;
+      border-radius: 2px; background: var(--indigo); flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    /* ═══════════════════════════════════════════════════════════════
+       CONSTANTS
+    ═══════════════════════════════════════════════════════════════ */
+    const PRIMING_START    = 720;
+    const TRIGGERING_START = 900;
+    const LS_KEY           = 'bdx-v2';
+    const CMDS             = ['/balls list', '/balls completion', '/balls info'];
+    const randCmdInterval  = () => 900 + Math.floor(Math.random() * 900); // 15–30 min in seconds
+
+    /* ═══════════════════════════════════════════════════════════════
+       SENTENCE ENGINE — 100+ unique high-entropy rants
+    ═══════════════════════════════════════════════════════════════ */
+    const RANTS_SHORT = [
+      "My router disconnected exactly during the one call I actually needed to attend.",
+      "Every microwave I've owned has had a turntable that derails itself by week three.",
+      "Someone used 'reply all' correctly once and I'm still trying to find them to say thank you.",
+      "The self-checkout machine accused me of a bagging irregularity and I have not healed.",
+      "My phone charger works perfectly until the moment it's plugged into the wall.",
+      "There is a passive-aggressive note on the office microwave raising more questions than it answers.",
+      "The printer produced the test page beautifully and immediately retired from actual work.",
+      "Every store has exactly one checkout open and the person ahead of me is doing a refund.",
+      "My smart TV remote requires three clicks to unpause, which I have started to take personally.",
+      "The Wi-Fi is strongest in the bathroom and I've accepted this as intentional design.",
+      "My laptop fan began screaming during a presentation and I pretended not to notice.",
+      "The grocery app marked an item as available and then marked it unavailable at checkout.",
+      "Someone scheduled a meeting to plan when the next meeting should happen and I attended both.",
+      "My air fryer has four presets and I have used exactly one of them for two years.",
+      "The USB drive was not recognized and then recognized and then not recognized again in sequence.",
+      "A software update moved the save button and I haven't been the same person since.",
+      "My thermostat learned my schedule and then confidently implemented the wrong one.",
+      "The streaming service asked if I was still watching after twenty minutes of autoplaying content.",
+      "Daylight saving time happened and three of my seven clocks still haven't been told.",
+      "The Bluetooth headphones connected to the wrong device for the forty-seventh consecutive time.",
+    ];
+
+    const RANTS_MEDIUM = [
+      "My router has operated flawlessly for eight months and chose today, of all days, to start disconnecting every forty seconds with no explanation available in any manual.",
+      "The self-checkout told me to place my item in the bagging area and then immediately flagged an unexpected item in the bagging area, which was the item I had just placed there per its instruction.",
+      "Someone explained the new Slack notification hierarchy to me and I nodded for six minutes while understanding nothing, and I consider that a successful meeting.",
+      "My laptop ran a system update exactly when I needed to share my screen, a reminder that the device has its own schedule and I am a guest on it.",
+      "My coffee maker has five brew strength settings, three of which produce outcomes I cannot distinguish, one I use daily, and one I am afraid to press.",
+      "The grocery store rearranged its entire layout and I found the pasta next to the wine, which is either a mistake or a philosophy and I'm not sure which.",
+      "My phone was at 71% when I left the house and 28% when I sat down, with no activity between those two events that I can account for.",
+      "There is a variety of person who joins a video call two minutes late and then needs everything recapped, and I have now met that person in every organization I have ever been part of.",
+      "My Bluetooth headphones connected to my laptop and my phone simultaneously, played audio from neither, and then disconnected from both while I was looking directly at them.",
+      "The smart plug app sent me a notification that my lamp turned on, which is accurate but not information I required at 2:47 in the morning.",
+      "Every printer I have owned has detected low ink precisely when I needed to print something, leading me to believe this is less coincidence and more positioning.",
+      "The navigation app rerouted me three times in four minutes, and I arrived seven minutes later than I would have if I had simply remembered the way from last time.",
+      "My email client grouped three conversations under one thread, two of which are unrelated, and I have to scroll past both to find the one I actually need.",
+      "The subscription cancellation flow asked me four times if I was sure, then offered me a discount that would have prevented the cancellation if it had been offered at any prior point.",
+      "I have owned this password manager for two years and it still occasionally tells me my master password is wrong on the first attempt before accepting it unchanged on the second.",
+      "The calendar invite said the meeting was optional but when I declined, two people replied to ask if everything was okay, so it was not optional.",
+      "My smart doorbell sent me a motion alert about a leaf, which it has now done six times today, and I don't know how to explain to it that this is not the threat model I was concerned about.",
+      "The help desk ticket said it was resolved and closed, and when I reopened it to explain that it was not resolved, a new ticket was created and also closed.",
+      "Someone put a 'Quick Question' in the subject line of an email that contained a question requiring three paragraphs and two attachments to answer.",
+      "My instant pot has a delay timer function that I've never used, a yogurt setting that I've questioned, and a sealing ring that somehow smells of every meal simultaneously.",
+    ];
+
+    const RANTS_LONG = [
+      "I would like to speak with whoever decided the correct number of USB-C cables for a functional life is somewhere between five and not quite enough, because I currently own seven cables and the one I need is never in the room I'm in.",
+      "The software update installed last night added two features I will never use, removed a keyboard shortcut I relied on seventeen times daily, moved the settings menu to a location I haven't found yet, and I consider that an accurate representation of product development velocity.",
+      "My refrigerator makes a sound every forty minutes that the manufacturer FAQ describes as normal operation and that I would describe as a noise with opinions, and I'm not sure which of us has the fuller picture.",
+      "I have been using the same self-checkout machine at the same store for three years and it still requires me to confirm I do not have a loyalty card at every single visit, which suggests we have not made as much progress in this relationship as I had assumed.",
+      "The corporate onboarding video told me to think outside the box, leverage our core synergies, and embrace disruptive innovation across twenty-two minutes, and I emerged from it with less practical information than I had entered with, which in retrospect was probably the most disruptive thing to happen that day.",
+      "My smart thermostat has been in learning mode for sixteen months and has concluded that I want the house at 68 degrees at 3am and 74 degrees at 7am, which is the exact opposite of my measured preferences in every direction and I am impressed by the consistency of its wrongness.",
+      "Every time I try to cancel a subscription I am walked through a five-step confirmation flow asking me why I'm leaving, offering me a pause option, showing me what I'll lose, then offering a 40% discount that would have resolved the situation if it had been offered at literally any point before I clicked cancel.",
+      "I have explained my dietary restrictions to this restaurant three times and each time I receive a dish that contains exactly the ingredient I mentioned, which makes me think the note-taking system has a step missing somewhere between the server and the kitchen.",
+      "My work laptop requires a VPN, a two-factor authentication app, a separate browser profile, and a hardware token to access the internal wiki, which is a remarkable amount of infrastructure protecting documentation that is mostly out of date.",
+      "The agile sprint planning session was scheduled for three hours, ran for four, produced a backlog of forty-seven items, and resulted in a commitment to deliver six of them, which is either very efficient or very inefficient depending on how you define both of those words.",
+      "I have been ignoring the 'storage almost full' notification on my phone for approximately eight months, taking no action, and somehow the phone has continued to function without consequence, which raises questions about how serious the warning was in the first place.",
+      "The terms of service update email said the changes were minor, the document was forty-one pages, and clicking 'I agree' was required to continue using a service I had already paid for, which is a negotiating position I respect in its audacity.",
+      "My keyboard has a function key row and a separate dedicated function lock key, and despite four years of use I cannot reliably predict which mode I'm in until after I've pressed the wrong key during something important.",
+      "The package tracking page has shown 'out for delivery' since 9am and it is now 6pm, which means either the driver is having a very full day or the definition of 'out for delivery' is doing more work than I had previously understood.",
+      "I sent a message in the wrong Slack channel, deleted it, but three people had already seen it and reacted with a thumbs up, so now I'm unsure whether to address it or whether the thumbs up was a gesture of solidarity in the ambiguity.",
+    ];
+
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    function generateSentence(size) {
+      // Algorithmic supplements so the pool never exhausts
+      const tech    = ['router','Bluetooth speaker','USB-C cable','printer','phone charger','laptop fan','wireless mouse','smart plug','HDMI cable','charging pad'];
+      const kitchen = ['microwave','toaster','coffee maker','blender','air fryer','instant pot','dishwasher','electric kettle'];
+      const grocery = ['self-checkout','express lane','loyalty card app','shopping cart','produce scale','paper receipt printer'];
+      const social  = ['unsolicited advice','reply-all emails','awkward elevator rides','mandatory fun events','passive-aggressive sticky notes','optional-but-really-mandatory meetings'];
+      const failV   = ['disconnects','freezes','overheats','starts updating itself','beeps at random','loses the signal','stops responding'];
+      const timing  = ['a critical video call','the one deadline that mattered','dinner','the only quiet moment of the day','exactly when I needed it','right as I was finishing'];
+      const adj     = ['suspicious','historically unprecedented','specifically targeted','a design choice I cannot explain','the kind of irony you cannot manufacture'];
+
+      const algo = {
+        small: [
+          `My ${pick(tech)} chose to ${pick(failV)} during ${pick(timing)} and I have not recovered emotionally.`,
+          `The ${pick(grocery)} experience was ${pick(adj)} and I am still thinking about it.`,
+          `${pick(social).charAt(0).toUpperCase() + pick(social).slice(1)} is not something I was prepared for and yet here we are.`,
+          `My ${pick(kitchen)} made a noise this morning that I have simply decided to accept as its personality.`,
+        ],
+        medium: [
+          `The fact that my ${pick(tech)} ${pick(failV)} during ${pick(timing)} is something I will never fully accept as routine behavior from a device I purchased in good faith.`,
+          `There is a type of person who holds up the ${pick(grocery)} line at the worst moment and I have met them in every city I have visited.`,
+          `My ${pick(kitchen)} has four settings, three of which produce identical results, one I use, and one I am saving for an emergency that hasn't arrived.`,
+          `Nobody explained why ${pick(social)} became normalized but here we all are participating in it as though it made sense from the beginning.`,
+        ],
+        large: [
+          `The thing about my ${pick(tech)} is that it performs without complaint for months and then decides that ${pick(failV)} during ${pick(timing)} is its defining characteristic now, with zero warning and zero documentation of what changed.`,
+          `What I find most striking about ${pick(social)} is not that it exists, but that everyone involved has silently agreed to pretend it is a perfectly calibrated response to the situation, when clearly no one designed it with intention.`,
+          `My ${pick(kitchen)} has developed a behavior over the past three months where it ${pick(failV)} at ${pick(timing)}, and everything I found online described it as either completely normal or early signs of a larger failure, which covers the full probability space but helps me not at all.`,
+        ],
+      };
+
+      const pools = {
+        small:  [...RANTS_SHORT, ...algo.small],
+        medium: [...RANTS_SHORT, ...RANTS_MEDIUM, ...algo.small, ...algo.medium],
+        large:  [...RANTS_MEDIUM, ...RANTS_LONG, ...algo.medium, ...algo.large],
+      };
+      return pick(pools[size] || pools.medium);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       BALL DATA
+    ═══════════════════════════════════════════════════════════════ */
+    // Rarity tiers: Mythical ≤10 · Legendary 11-30 · Epic 31-70 · Rare 71-130 · Uncommon 131-200 · Common 201+
+    const BALLS = [
+      // ── Mythical ────────────────────────────────────────────────
+      {tier:1,  name:"British Empire",                      rarity:"Mythical"},
+      {tier:1,  name:"Reichtangle",                         rarity:"Mythical"},
+      {tier:1,  name:"Russian Empire",                      rarity:"Mythical"},
+      {tier:4,  name:"Mongol Empire",                       rarity:"Mythical"},
+      {tier:5,  name:"Kalmar Union",                        rarity:"Mythical"},
+      {tier:5,  name:"Roman Empire",                        rarity:"Mythical"},
+      {tier:7,  name:"Papal States",                        rarity:"Mythical"},
+      {tier:7,  name:"Polish-Lithuanian Commonwealth",      rarity:"Mythical"},
+      {tier:9,  name:"Qin Dynasty",                         rarity:"Mythical"},
+      {tier:10, name:"German Empire",                       rarity:"Mythical"},
+      // ── Legendary ───────────────────────────────────────────────
+      {tier:11, name:"Han Dynasty",                         rarity:"Legendary"},
+      {tier:12, name:"Holy Roman Empire",                   rarity:"Legendary"},
+      {tier:13, name:"Akkadian Empire",                     rarity:"Legendary"},
+      {tier:14, name:"Austria-Hungary",                     rarity:"Legendary"},
+      {tier:14, name:"Hunnic Empire",                       rarity:"Legendary"},
+      {tier:14, name:"Japanese Empire",                     rarity:"Legendary"},
+      {tier:14, name:"Republic of China",                   rarity:"Legendary"},
+      {tier:14, name:"Soviet Union",                        rarity:"Legendary"},
+      {tier:14, name:"Tokugawa Shogunate",                  rarity:"Legendary"},
+      {tier:14, name:"United States",                       rarity:"Legendary"},
+      {tier:21, name:"Vatican",                             rarity:"Legendary"},
+      {tier:22, name:"Republic of Texas",                   rarity:"Legendary"},
+      {tier:23, name:"Russia",                              rarity:"Legendary"},
+      {tier:24, name:"Gupta Empire",                        rarity:"Legendary"},
+      {tier:25, name:"China",                               rarity:"Legendary"},
+      {tier:26, name:"Austrian Empire",                     rarity:"Legendary"},
+      {tier:26, name:"Joseon",                              rarity:"Legendary"},
+      {tier:28, name:"Ancient Troy",                        rarity:"Legendary"},
+      {tier:29, name:"India",                               rarity:"Legendary"},
+      {tier:30, name:"Ancient Greece",                      rarity:"Legendary"},
+      {tier:30, name:"Japan",                               rarity:"Legendary"},
+      {tier:30, name:"Korea",                               rarity:"Legendary"},
+      {tier:30, name:"Napoleonic France",                   rarity:"Legendary"},
+      {tier:30, name:"Ottoman Empire",                      rarity:"Legendary"},
+      // ── Epic ────────────────────────────────────────────────────
+      {tier:35, name:"Phoenicia",                           rarity:"Epic"},
+      {tier:36, name:"BRICS",                               rarity:"Epic"},
+      {tier:36, name:"Republic of Venice",                  rarity:"Epic"},
+      {tier:36, name:"South Korea",                         rarity:"Epic"},
+      {tier:39, name:"France",                              rarity:"Epic"},
+      {tier:39, name:"Spanish Empire",                      rarity:"Epic"},
+      {tier:39, name:"United Kingdoms of Sweden and Norway",rarity:"Epic"},
+      {tier:42, name:"Achaemenid Empire",                   rarity:"Epic"},
+      {tier:42, name:"Macedon",                             rarity:"Epic"},
+      {tier:42, name:"United Kingdom",                      rarity:"Epic"},
+      {tier:45, name:"Empire of Brazil",                    rarity:"Epic"},
+      {tier:46, name:"Kingdom of Leinster",                 rarity:"Epic"},
+      {tier:47, name:"Pakistan",                            rarity:"Epic"},
+      {tier:48, name:"Sumer",                               rarity:"Epic"},
+      {tier:49, name:"Ancient Egypt",                       rarity:"Epic"},
+      {tier:49, name:"Brazil",                              rarity:"Epic"},
+      {tier:49, name:"Byzantium",                           rarity:"Epic"},
+      {tier:49, name:"Greenland",                           rarity:"Epic"},
+      {tier:49, name:"Portuguese Empire",                   rarity:"Epic"},
+      {tier:49, name:"Qing Dynasty",                        rarity:"Epic"},
+      {tier:55, name:"British Raj",                         rarity:"Epic"},
+      {tier:55, name:"Carthage",                            rarity:"Epic"},
+      {tier:55, name:"Italy",                               rarity:"Epic"},
+      {tier:55, name:"Kingdom of Italy",                    rarity:"Epic"},
+      {tier:55, name:"Third French Republic",               rarity:"Epic"},
+      {tier:60, name:"Egypt",                               rarity:"Epic"},
+      {tier:60, name:"Russian Soviet Federative Socialist Republic", rarity:"Epic"},
+      {tier:62, name:"Turkey",                              rarity:"Epic"},
+      {tier:63, name:"French Empire",                       rarity:"Epic"},
+      {tier:64, name:"Iran",                                rarity:"Epic"},
+      {tier:64, name:"Kingdom of Greece",                   rarity:"Epic"},
+      {tier:64, name:"Konbaung Empire",                     rarity:"Epic"},
+      {tier:64, name:"North German Confederation",          rarity:"Epic"},
+      {tier:68, name:"African Union",                       rarity:"Epic"},
+      {tier:68, name:"Arab League",                         rarity:"Epic"},
+      {tier:68, name:"Confederate States / CSA",             rarity:"Epic"},
+      {tier:68, name:"Gaul",                                rarity:"Epic"},
+      {tier:68, name:"Germania",                            rarity:"Epic"},
+      {tier:68, name:"Indonesia",                           rarity:"Epic"},
+      {tier:68, name:"Kingdom of Hungary",                  rarity:"Epic"},
+      {tier:68, name:"Mayan Empire",                        rarity:"Epic"},
+      {tier:68, name:"Yugoslavia",                          rarity:"Epic"},
+      // ── Rare ────────────────────────────────────────────────────
+      {tier:77, name:"Germany",                             rarity:"Rare"},
+      {tier:78, name:"Australia",                           rarity:"Rare"},
+      {tier:78, name:"Hong Kong",                           rarity:"Rare"},
+      {tier:78, name:"Israel",                              rarity:"Rare"},
+      {tier:78, name:"Xiongnu",                             rarity:"Rare"},
+      {tier:82, name:"Swedish Empire",                      rarity:"Rare"},
+      {tier:83, name:"Spain",                               rarity:"Rare"},
+      {tier:84, name:"Olmecs",                              rarity:"Rare"},
+      {tier:85, name:"Antarctica",                          rarity:"Rare"},
+      {tier:85, name:"Ming Dynasty",                        rarity:"Rare"},
+      {tier:85, name:"Saudi Arabia",                        rarity:"Rare"},
+      {tier:88, name:"Xia Dynasty",                         rarity:"Rare"},
+      {tier:89, name:"Franks",                              rarity:"Rare"},
+      {tier:89, name:"League of Nations",                   rarity:"Rare"},
+      {tier:89, name:"Monaco",                              rarity:"Rare"},
+      {tier:89, name:"Union of South Africa",               rarity:"Rare"},
+      {tier:93, name:"Ukraine",                             rarity:"Rare"},
+      {tier:94, name:"Canada",                              rarity:"Rare"},
+      {tier:94, name:"Kingdom of Two Sicilies",             rarity:"Rare"},
+      {tier:96, name:"Kingdom of Brandenburg",              rarity:"Rare"},
+      {tier:96, name:"Kingdom of Connacht",                 rarity:"Rare"},
+      {tier:96, name:"Poland",                              rarity:"Rare"},
+      {tier:99, name:"Sweden",                              rarity:"Rare"},
+      {tier:100,name:"Kingdom of Munster",                  rarity:"Rare"},
+      {tier:101,name:"Macau",                               rarity:"Rare"},
+      {tier:101,name:"Scotland",                            rarity:"Rare"},
+      {tier:101,name:"South Africa",                        rarity:"Rare"},
+      {tier:104,name:"Greece",                              rarity:"Rare"},
+      {tier:105,name:"Safavid Empire",                      rarity:"Rare"},
+      {tier:105,name:"Vietnam",                             rarity:"Rare"},
+      {tier:107,name:"Kingdom of Ulaid",                    rarity:"Rare"},
+      {tier:107,name:"Parthian Empire",                     rarity:"Rare"},
+      {tier:107,name:"Thailand",                            rarity:"Rare"},
+      {tier:110,name:"North Korea",                         rarity:"Rare"},
+      {tier:111,name:"England",                             rarity:"Rare"},
+      {tier:111,name:"European Union",                      rarity:"Rare"},
+      {tier:111,name:"Francoist Spain",                     rarity:"Rare"},
+      {tier:111,name:"Manchukuo",                           rarity:"Rare"},
+      {tier:111,name:"NATO",                                rarity:"Rare"},
+      {tier:111,name:"Republican Spain",                    rarity:"Rare"},
+      {tier:111,name:"United Arab Republic",                rarity:"Rare"},
+      {tier:111,name:"United Nations",                      rarity:"Rare"},
+      {tier:111,name:"Warsaw Pact",                         rarity:"Rare"},
+      {tier:111,name:"Weimar Republic",                     rarity:"Rare"},
+      {tier:111,name:"Zhou Dynasty",                        rarity:"Rare"},
+      {tier:122,name:"Argentine Confederation",             rarity:"Rare"},
+      {tier:123,name:"Armenian Empire",                     rarity:"Rare"},
+      {tier:124,name:"Assyrian Empire",                     rarity:"Rare"},
+      {tier:125,name:"ASEAN",                               rarity:"Rare"},
+      {tier:125,name:"Kingdom of Hawaii",                   rarity:"Rare"},
+      {tier:127,name:"Kingdom of Bali",                     rarity:"Rare"},
+      {tier:127,name:"Kingdom of Bora Bora",                rarity:"Rare"},
+      {tier:127,name:"Yuan Dynasty",                        rarity:"Rare"},
+      {tier:130,name:"Bavaria",                             rarity:"Rare"},
+      // ── Uncommon ────────────────────────────────────────────────
+      {tier:131,name:"Algeria",                             rarity:"Uncommon"},
+      {tier:131,name:"Argentina",                           rarity:"Uncommon"},
+      {tier:131,name:"Bangladesh",                          rarity:"Uncommon"},
+      {tier:131,name:"Colombia",                            rarity:"Uncommon"},
+      {tier:131,name:"Czechia",                             rarity:"Uncommon"},
+      {tier:131,name:"Iraq",                                rarity:"Uncommon"},
+      {tier:131,name:"Malaysia",                            rarity:"Uncommon"},
+      {tier:131,name:"Mexico",                              rarity:"Uncommon"},
+      {tier:131,name:"Myanmar",                             rarity:"Uncommon"},
+      {tier:131,name:"Netherlands",                         rarity:"Uncommon"},
+      {tier:131,name:"Nigeria",                             rarity:"Uncommon"},
+      {tier:131,name:"Norway",                              rarity:"Uncommon"},
+      {tier:131,name:"Peru",                                rarity:"Uncommon"},
+      {tier:131,name:"Philippines",                         rarity:"Uncommon"},
+      {tier:131,name:"Portugal",                            rarity:"Uncommon"},
+      {tier:131,name:"Prussia",                             rarity:"Uncommon"},
+      {tier:131,name:"Romania",                             rarity:"Uncommon"},
+      {tier:131,name:"Singapore",                           rarity:"Uncommon"},
+      {tier:131,name:"Switzerland",                         rarity:"Uncommon"},
+      {tier:131,name:"Syria",                               rarity:"Uncommon"},
+      {tier:131,name:"Tuvalu",                              rarity:"Uncommon"},
+      {tier:131,name:"United Arab Emirates",                rarity:"Uncommon"},
+      {tier:131,name:"Venezuela",                           rarity:"Uncommon"},
+      {tier:154,name:"Kingdom of Cao Wei",                  rarity:"Uncommon"},
+      {tier:154,name:"Kingdom of Shu Han",                  rarity:"Uncommon"},
+      {tier:154,name:"Kingdom of Sun Wu",                   rarity:"Uncommon"},
+      {tier:157,name:"Mali Empire",                         rarity:"Uncommon"},
+      {tier:158,name:"Ukrainian Soviet Socialist Republic",  rarity:"Uncommon"},
+      {tier:159,name:"Federal Republic of Central America", rarity:"Uncommon"},
+      {tier:160,name:"Ancient Athens",                      rarity:"Uncommon"},
+      {tier:160,name:"Ancient Sparta",                      rarity:"Uncommon"},
+      {tier:160,name:"Babylon",                             rarity:"Uncommon"},
+      {tier:160,name:"Czechoslovakia",                      rarity:"Uncommon"},
+      {tier:160,name:"Ethiopian Empire",                    rarity:"Uncommon"},
+      {tier:160,name:"French Indochina",                    rarity:"Uncommon"},
+      {tier:160,name:"Nauru",                               rarity:"Uncommon"},
+      {tier:160,name:"Numidia",                             rarity:"Uncommon"},
+      {tier:160,name:"Quebec",                              rarity:"Uncommon"},
+      {tier:160,name:"Siam",                                rarity:"Uncommon"},
+      {tier:160,name:"South Vietnam",                       rarity:"Uncommon"},
+      {tier:160,name:"Taiwan",                              rarity:"Uncommon"},
+      {tier:160,name:"Wales",                               rarity:"Uncommon"},
+      {tier:160,name:"West Germany",                        rarity:"Uncommon"},
+      {tier:174,name:"Kingdom of Egypt",                    rarity:"Uncommon"},
+      {tier:175,name:"Mughal Empire",                       rarity:"Uncommon"},
+      {tier:176,name:"Angola",                              rarity:"Uncommon"},
+      {tier:176,name:"Austria",                             rarity:"Uncommon"},
+      {tier:176,name:"Azerbaijan",                          rarity:"Uncommon"},
+      {tier:176,name:"Bahamas",                             rarity:"Uncommon"},
+      {tier:176,name:"Belarus",                             rarity:"Uncommon"},
+      {tier:176,name:"Belgium",                             rarity:"Uncommon"},
+      {tier:176,name:"Bolivia",                             rarity:"Uncommon"},
+      {tier:176,name:"Bulgaria",                            rarity:"Uncommon"},
+      {tier:176,name:"Chile",                               rarity:"Uncommon"},
+      {tier:176,name:"Croatia",                             rarity:"Uncommon"},
+      {tier:176,name:"Cuba",                                rarity:"Uncommon"},
+      {tier:176,name:"Cyprus",                              rarity:"Uncommon"},
+      {tier:176,name:"Denmark",                             rarity:"Uncommon"},
+      {tier:176,name:"DR Congo",                            rarity:"Uncommon"},
+      {tier:176,name:"Ecuador",                             rarity:"Uncommon"},
+      {tier:176,name:"Ethiopia",                            rarity:"Uncommon"},
+      {tier:176,name:"Finland",                             rarity:"Uncommon"},
+      {tier:176,name:"Hungary",                             rarity:"Uncommon"},
+      {tier:176,name:"Iberian Union",                       rarity:"Uncommon"},
+      {tier:176,name:"Jordan",                              rarity:"Uncommon"},
+      {tier:176,name:"Kazakhstan",                          rarity:"Uncommon"},
+      {tier:176,name:"Kenya",                               rarity:"Uncommon"},
+      {tier:176,name:"Kuwait",                              rarity:"Uncommon"},
+      {tier:176,name:"Libya",                               rarity:"Uncommon"},
+      {tier:176,name:"Morocco",                             rarity:"Uncommon"},
+      {tier:176,name:"North Vietnam",                       rarity:"Uncommon"},
+      {tier:176,name:"Oman",                                rarity:"Uncommon"},
+      {tier:176,name:"Qatar",                               rarity:"Uncommon"},
+      {tier:176,name:"San Marino",                          rarity:"Uncommon"},
+      {tier:176,name:"Serbia",                              rarity:"Uncommon"},
+      {tier:176,name:"Slovakia",                            rarity:"Uncommon"},
+      {tier:176,name:"Sri Lanka",                           rarity:"Uncommon"},
+      {tier:176,name:"Sudan",                               rarity:"Uncommon"},
+      {tier:176,name:"Tunisia",                             rarity:"Uncommon"},
+      {tier:176,name:"Turkmenistan",                        rarity:"Uncommon"},
+      {tier:176,name:"Uzbekistan",                          rarity:"Uncommon"},
+      {tier:176,name:"Yemen",                               rarity:"Uncommon"},
+      // ── Common ──────────────────────────────────────────────────
+      {tier:213,name:"Republic of New Granada",             rarity:"Common"},
+      {tier:214,name:"Faroe Islands",                       rarity:"Common"},
+      {tier:214,name:"Trinidad and Tobago",                 rarity:"Common"},
+      {tier:216,name:"Orange Free State",                   rarity:"Common"},
+      {tier:217,name:"East Germany",                        rarity:"Common"},
+      {tier:217,name:"Emirate of Nejd",                     rarity:"Common"},
+      {tier:217,name:"Free France",                         rarity:"Common"},
+      {tier:217,name:"Golden Horde",                        rarity:"Common"},
+      {tier:217,name:"Jamaica",                             rarity:"Common"},
+      {tier:217,name:"Maldives",                            rarity:"Common"},
+      {tier:217,name:"Northern Ireland",                    rarity:"Common"},
+      {tier:217,name:"Tibet",                               rarity:"Common"},
+      {tier:217,name:"Vichy France",                        rarity:"Common"},
+      {tier:226,name:"Andorra",                             rarity:"Common"},
+      {tier:226,name:"Brunei",                              rarity:"Common"},
+      {tier:226,name:"Byelorussian Soviet Socialist Republic",rarity:"Common"},
+      {tier:226,name:"Grand Duchy of Tuscany",              rarity:"Common"},
+      {tier:226,name:"Khedivate of Egypt",                  rarity:"Common"},
+      {tier:226,name:"Micronesia",                          rarity:"Common"},
+      {tier:226,name:"Tonga",                               rarity:"Common"},
+      {tier:233,name:"Khmer Empire",                        rarity:"Common"},
+      {tier:234,name:"Barbados",                            rarity:"Common"},
+      {tier:234,name:"Kingdom of Saxony",                   rarity:"Common"},
+      {tier:234,name:"Marshall Islands",                    rarity:"Common"},
+      {tier:237,name:"Armenia",                             rarity:"Common"},
+      {tier:237,name:"Bahrain",                             rarity:"Common"},
+      {tier:237,name:"Cambodia",                            rarity:"Common"},
+      {tier:237,name:"Chad",                                rarity:"Common"},
+      {tier:237,name:"Congo Free State",                    rarity:"Common"},
+      {tier:237,name:"Equatorial Guinea",                   rarity:"Common"},
+      {tier:237,name:"Fatimid Caliphate",                   rarity:"Common"},
+      {tier:237,name:"Georgia",                             rarity:"Common"},
+      {tier:237,name:"Ghana",                               rarity:"Common"},
+      {tier:237,name:"Guatemala",                           rarity:"Common"},
+      {tier:237,name:"Guyana",                              rarity:"Common"},
+      {tier:237,name:"Ireland",                             rarity:"Common"},
+      {tier:237,name:"Kyrgyzstan",                          rarity:"Common"},
+      {tier:237,name:"Latvia",                              rarity:"Common"},
+      {tier:237,name:"Lithuania",                           rarity:"Common"},
+      {tier:237,name:"Mali",                                rarity:"Common"},
+      {tier:237,name:"Malta",                               rarity:"Common"},
+      {tier:237,name:"Mongolia",                            rarity:"Common"},
+      {tier:237,name:"New Zealand",                         rarity:"Common"},
+      {tier:237,name:"Samoa",                               rarity:"Common"},
+      {tier:237,name:"Slovenia",                            rarity:"Common"},
+      {tier:237,name:"Togo",                                rarity:"Common"},
+      {tier:237,name:"Uganda",                              rarity:"Common"},
+      {tier:237,name:"Uruguay",                             rarity:"Common"},
+      {tier:237,name:"Zambia",                              rarity:"Common"},
+      {tier:237,name:"Zimbabwe",                            rarity:"Common"},
+      {tier:263,name:"Duchy of Limburg",                    rarity:"Common"},
+      {tier:264,name:"Malawi",                              rarity:"Common"},
+      {tier:265,name:"Kingdom of Sardinia",                 rarity:"Common"},
+      {tier:265,name:"Rashidi Emirate",                     rarity:"Common"},
+      {tier:267,name:"Costa Rica",                          rarity:"Common"},
+      {tier:267,name:"Dominica",                            rarity:"Common"},
+      {tier:267,name:"Guinea-Bissau",                       rarity:"Common"},
+      {tier:267,name:"Sao Tome and Principe",               rarity:"Common"},
+      {tier:267,name:"Tannu Tuva",                          rarity:"Common"},
+      {tier:272,name:"Free City of Frankfurt",              rarity:"Common"},
+      {tier:272,name:"Kingdom of Iberia",                   rarity:"Common"},
+      {tier:272,name:"Seychelles",                          rarity:"Common"},
+      {tier:275,name:"Afghanistan",                         rarity:"Common"},
+      {tier:275,name:"Albania",                             rarity:"Common"},
+      {tier:275,name:"Belize",                              rarity:"Common"},
+      {tier:275,name:"Bosnia",                              rarity:"Common"},
+      {tier:275,name:"Botswana",                            rarity:"Common"},
+      {tier:275,name:"Cameroon",                            rarity:"Common"},
+      {tier:275,name:"Ceylon",                              rarity:"Common"},
+      {tier:275,name:"Congo",                               rarity:"Common"},
+      {tier:275,name:"Ivory Coast",                         rarity:"Common"},
+      {tier:275,name:"Dominican Republic",                  rarity:"Common"},
+      {tier:275,name:"Eritrea",                             rarity:"Common"},
+      {tier:275,name:"Estonia",                             rarity:"Common"},
+      {tier:275,name:"Eswatini",                            rarity:"Common"},
+      {tier:275,name:"Fiji",                                rarity:"Common"},
+      {tier:275,name:"Free City of Danzig",                 rarity:"Common"},
+      {tier:275,name:"Gambia",                              rarity:"Common"},
+      {tier:275,name:"Haiti",                               rarity:"Common"},
+      {tier:275,name:"Honduras",                            rarity:"Common"},
+      {tier:275,name:"Khiva",                               rarity:"Common"},
+      {tier:275,name:"Laos",                                rarity:"Common"},
+      {tier:275,name:"Lebanon",                             rarity:"Common"},
+      {tier:275,name:"Liechtenstein",                       rarity:"Common"},
+      {tier:275,name:"Moldova",                             rarity:"Common"},
+      {tier:275,name:"Mossi Kingdoms",                      rarity:"Common"},
+      {tier:275,name:"Mozambique",                          rarity:"Common"},
+      {tier:275,name:"Nepal",                               rarity:"Common"},
+      {tier:275,name:"Nicaragua",                           rarity:"Common"},
+      {tier:275,name:"Niger",                               rarity:"Common"},
+      {tier:275,name:"Palestine",                           rarity:"Common"},
+      {tier:275,name:"Paraguay",                            rarity:"Common"},
+      {tier:275,name:"Saint Kitts and Nevis",               rarity:"Common"},
+      {tier:275,name:"Saint Lucia",                         rarity:"Common"},
+      {tier:275,name:"Somaliland",                          rarity:"Common"},
+      {tier:275,name:"South Sudan",                         rarity:"Common"},
+      {tier:275,name:"South Yemen",                         rarity:"Common"},
+      {tier:275,name:"Tajikistan",                          rarity:"Common"},
+      {tier:275,name:"Tanzania",                            rarity:"Common"},
+      {tier:275,name:"Western Sahara",                      rarity:"Common"},
+      {tier:313,name:"Peru-Bolivian Confederation",         rarity:"Common"},
+      {tier:314,name:"Zapotecs",                            rarity:"Common"},
+      {tier:315,name:"Cape Verde",                          rarity:"Common"},
+      {tier:315,name:"Grenada",                             rarity:"Common"},
+      {tier:315,name:"Guinea",                              rarity:"Common"},
+      {tier:315,name:"Palau",                               rarity:"Common"},
+      {tier:315,name:"Solomon Islands",                     rarity:"Common"},
+      {tier:315,name:"St. Vincent and the Grenadines",      rarity:"Common"},
+      {tier:315,name:"Vanuatu",                             rarity:"Common"},
+      {tier:322,name:"Principality of Moldavia",            rarity:"Common"},
+      {tier:323,name:"Qajar Dynasty",                       rarity:"Common"},
+      {tier:324,name:"Antigua and Barbuda",                 rarity:"Common"},
+      {tier:324,name:"Benin",                               rarity:"Common"},
+      {tier:324,name:"Bhutan",                              rarity:"Common"},
+      {tier:324,name:"Burkina Faso",                        rarity:"Common"},
+      {tier:324,name:"Burundi",                             rarity:"Common"},
+      {tier:324,name:"Central African Republic",            rarity:"Common"},
+      {tier:324,name:"Comoros",                             rarity:"Common"},
+      {tier:324,name:"El Salvador",                         rarity:"Common"},
+      {tier:324,name:"Gabon",                               rarity:"Common"},
+      {tier:324,name:"Hejaz",                               rarity:"Common"},
+      {tier:324,name:"Iceland",                             rarity:"Common"},
+      {tier:324,name:"Kiribati",                            rarity:"Common"},
+      {tier:324,name:"Kosovo",                              rarity:"Common"},
+      {tier:324,name:"Lesotho",                             rarity:"Common"},
+      {tier:324,name:"Liberia",                             rarity:"Common"},
+      {tier:324,name:"Luxembourg",                          rarity:"Common"},
+      {tier:324,name:"Madagascar",                          rarity:"Common"},
+      {tier:324,name:"Majapahit",                           rarity:"Common"},
+      {tier:324,name:"Mauritania",                          rarity:"Common"},
+      {tier:324,name:"Mauritius",                           rarity:"Common"},
+      {tier:324,name:"Montenegro",                          rarity:"Common"},
+      {tier:324,name:"Namibia",                             rarity:"Common"},
+      {tier:324,name:"Nanda Empire",                        rarity:"Common"},
+      {tier:324,name:"North Macedonia",                     rarity:"Common"},
+      {tier:324,name:"Panama",                              rarity:"Common"},
+      {tier:324,name:"Papua New Guinea",                    rarity:"Common"},
+      {tier:324,name:"Paris Commune",                       rarity:"Common"},
+      {tier:324,name:"Rwanda",                              rarity:"Common"},
+      {tier:324,name:"Senegal",                             rarity:"Common"},
+      {tier:324,name:"Sierra Leone",                        rarity:"Common"},
+      {tier:324,name:"Somalia",                             rarity:"Common"},
+      {tier:324,name:"Suriname",                            rarity:"Common"},
+      {tier:324,name:"Timor-Leste",                         rarity:"Common"},
+      {tier:357,name:"Dahomey",                             rarity:"Common"},
+      {tier:358,name:"Djibouti",                            rarity:"Common"},
+    ];
+
+    /* ═══════════════════════════════════════════════════════════════
+       UTILITIES
+    ═══════════════════════════════════════════════════════════════ */
+    const fmt = s => {
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      return h > 0
+        ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+        : `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    };
+
+    const fmtDown = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+
+    function parseTimeToTs(str) {
+      const m = str.trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+      if (!m) return null;
+      let h = parseInt(m[1]); const min = parseInt(m[2]); const ap = m[3]?.toLowerCase();
+      if (ap === 'pm' && h !== 12) h += 12;
+      if (ap === 'am' && h === 12) h = 0;
+      if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+      const d = new Date(); d.setHours(h, min, 0, 0);
+      if (d > Date.now()) d.setDate(d.getDate() - 1);
+      return d.getTime();
+    }
+
+    function playSound(type, enabled) {
+      if (!enabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.connect(g); g.connect(ctx.destination);
+        const t = ctx.currentTime;
+        g.gain.setValueAtTime(0.8, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        if (type === 'priming') {
+          osc.frequency.setValueAtTime(523, t);
+          osc.frequency.linearRampToValueAtTime(659, t + 0.2);
+        } else if (type === 'triggering') {
+          osc.frequency.setValueAtTime(523, t);
+          osc.frequency.setValueAtTime(659, t + 0.12);
+          osc.frequency.setValueAtTime(784, t + 0.25);
+        } else if (type === 'sentence') {
+          osc.frequency.setValueAtTime(880, t);
+          osc.frequency.exponentialRampToValueAtTime(1100, t + 0.1);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+        } else if (type === 'caught') {
+          [392,523,659,784].forEach((f,i) => osc.frequency.setValueAtTime(f, t + i*0.1));
+        }
+        osc.start(t); osc.stop(t + 0.7);
+      } catch(_) {}
+    }
+
+    function fireNotif(title, body) {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(title, { body: body.slice(0,120), tag: 'bdx', silent: true });
+      }
+    }
+
+    function rarityStyle(r) {
+      return { Mythical:'text-purple-400 bg-purple-500/10 border-purple-500/20', Legendary:'text-amber-400 bg-amber-500/10 border-amber-500/20', Epic:'text-indigo-400 bg-indigo-500/10 border-indigo-500/20', Rare:'text-blue-400 bg-blue-500/10 border-blue-500/20', Uncommon:'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', Common:'text-slate-500 bg-slate-500/10 border-slate-500/20' }[r] || 'text-slate-500 bg-slate-500/10';
+    }
+
+    async function copyText(text) {
+      try { await navigator.clipboard.writeText(text); }
+      catch(_) {
+        const el = document.createElement('textarea');
+        el.value = text; el.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(el); el.select(); document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SHARED COMPONENTS
+    ═══════════════════════════════════════════════════════════════ */
+    function addRipple(e) {
+      const btn = e.currentTarget;
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 1.5;
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top  - size / 2;
+      const el = document.createElement('span');
+      el.className = 'ripple';
+      el.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+      btn.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    function CopyButton({ text, label = 'Copy', block = false }) {
+      const [done, setDone] = useState(false);
+      const handle = async e => {
+        if (!text) return;
+        addRipple(e);
+        await copyText(text);
+        setDone(true); setTimeout(() => setDone(false), 1700);
+      };
+      return (
+        <button onClick={handle}
+          className={`btn btn-copy px-4 py-2 text-xs ${block ? 'w-full py-2.5' : ''} ${done ? 'copied' : ''}`}>
+          {done ? '✓ Copied!' : `⎘ ${label}`}
+        </button>
+      );
+    }
+
+    function Bar({ pct, color = '#6366F1', label, sub }) {
+      return (
+        <div>
+          {(label || sub) && (
+            <div className="flex justify-between mb-1.5">
+              {label && <span className="text-xs font-medium uppercase tracking-wider text-slate-500">{label}</span>}
+              {sub   && <span className="text-xs font-mono text-slate-600">{sub}</span>}
+            </div>
+          )}
+          <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
+            <div className="h-full rounded-full transition-all duration-1000 bar-fill"
+                 style={{ width: `${Math.max(0, Math.min(100, pct))}%`, background: color }} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MODALS
+    ═══════════════════════════════════════════════════════════════ */
+    function BallModal({ onClose }) {
+      const [q, setQ] = useState('');
+      const list = useMemo(() => {
+        const lq = q.trim().toLowerCase();
+        return lq ? BALLS.filter(b => b.name.toLowerCase().includes(lq) || String(b.tier).includes(lq) || b.rarity.toLowerCase().includes(lq)) : BALLS;
+      }, [q]);
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6"
+             style={{background:'rgba(0,0,0,.82)',backdropFilter:'blur(10px)'}}
+             onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="glass2 rounded-2xl rounded-b-none sm:rounded-2xl w-full sm:max-w-lg flex flex-col anim-slide-up" style={{maxHeight:'82vh'}}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
+              <div>
+                <h2 className="font-semibold text-white text-sm">Ball Reference</h2>
+                <p className="text-xs mt-0.5 text-slate-600">{list.length} of {BALLS.length} balls</p>
+              </div>
+              <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
+            </div>
+            <div className="px-4 py-3 border-b" style={{borderColor:'var(--border)'}}>
+              <input className="inp text-sm" placeholder="Search name, tier, rarity…" value={q} onChange={e=>setQ(e.target.value)} autoFocus />
+            </div>
+            <div className="overflow-y-auto flex-1 p-2">
+              {list.map(b => (
+                <div key={b.name+b.tier} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors">
+                  <span className="font-mono text-xs w-10 text-center px-1.5 py-0.5 rounded text-slate-600" style={{background:'var(--s2)'}}>T{b.tier}</span>
+                  <span className="flex-1 text-sm text-white font-medium">{b.name}</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border ${rarityStyle(b.rarity)}`}>{b.rarity}</span>
+                </div>
+              ))}
+              {list.length === 0 && <div className="text-center py-12 text-slate-600 text-sm">No results for "{q}"</div>}
+            </div>
+            <div className="px-4 py-3 border-t text-center" style={{borderColor:'var(--border)'}}>
+              <a href="https://ballsdex.miraheze.org/wiki/Rarity_List" target="_blank" rel="noopener" className="text-xs text-slate-700 hover:text-indigo-400 transition-colors">
+                Full list → ballsdex.miraheze.org
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function SyncModal({ onClose, onSync }) {
+      const [val, setVal] = useState('');
+      const [err, setErr] = useState('');
+      const submit = e => {
+        e.preventDefault();
+        const ts = parseTimeToTs(val);
+        if (!ts) { setErr('Enter a time like "1:11 PM" or "13:45"'); return; }
+        const ago = Math.floor((Date.now() - ts) / 1000);
+        if (ago < 0 || ago > 7200) { setErr('Must be within the last 2 hours.'); return; }
+        onSync(ts); onClose();
+      };
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6"
+             style={{background:'rgba(0,0,0,.82)',backdropFilter:'blur(10px)'}}
+             onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="glass2 rounded-2xl w-full max-w-sm p-6 anim-slide-up">
+            <h2 className="font-semibold text-white text-sm mb-0.5">Sync Last Catch</h2>
+            <p className="text-xs text-slate-600 mb-5">Enter the time you last caught a ball to calibrate the clock.</p>
+            <form onSubmit={submit} className="space-y-4">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Catch time</label>
+                <input className="inp font-mono text-center text-base" placeholder='e.g. 1:11 PM or 13:11'
+                       value={val} onChange={e=>{setVal(e.target.value);setErr('');}} autoFocus />
+                {err && <p className="text-xs text-red-400 mt-1.5">{err}</p>}
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={onClose} className="btn flex-1 py-2.5 text-sm text-slate-400" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>Cancel</button>
+                <button type="submit" className="btn flex-1 py-2.5 text-sm text-white font-semibold" style={{background:'var(--indigo)',border:'1px solid rgba(99,102,241,.4)'}}>Sync Clock</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       APP
+    ═══════════════════════════════════════════════════════════════ */
+    function App() {
+      // ── Load persisted ──────────────────────────────────────────
+      const saved = useMemo(() => { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(_){return{};} }, []);
+
+      // ── State ───────────────────────────────────────────────────
+      const [lastCatch,   setLastCatch]   = useState(() => saved.lastCatch || Date.now());
+      const [elapsed,     setElapsed]     = useState(0);
+      const [phase,       setPhase]       = useState('RESTING');
+      const [standby,     setStandby]     = useState(false);
+
+      const [serverName,  setServerName]  = useState(() => saved.serverName  || '');
+      const [memberCount, setMemberCount] = useState(() => saved.memberCount || 'medium');
+      const [sentSize,    setSentSize]    = useState(() => saved.sentSize     || 'medium');
+      const [sound,       setSound]       = useState(() => saved.sound !== false);
+      const [notifs,      setNotifs]      = useState(false);
+
+      const [sentence,    setSentence]    = useState('');
+      const [command,     setCommand]     = useState('');
+      const [tick,        setTick]        = useState(60);
+      const [feed,        setFeed]        = useState([]);
+
+      const [showBalls,   setShowBalls]   = useState(false);
+      const [showSync,    setShowSync]    = useState(false);
+      const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
+      const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
+
+      // ── Refs (no re-render needed, read inside interval) ────────
+      const tickR    = useRef(60);
+      const cmdIdxR  = useRef(0);
+      const cmdTickR = useRef(randCmdInterval()); // seconds until next command
+      const prevPhR  = useRef('RESTING');
+      const soundR   = useRef(sound);
+      const notifR   = useRef(notifs);
+      const standbyR = useRef(standby);
+      const sizeR    = useRef(sentSize);
+
+      useEffect(() => { soundR.current   = sound;    }, [sound]);
+      useEffect(() => { notifR.current   = notifs;   }, [notifs]);
+      useEffect(() => { standbyR.current = standby;  }, [standby]);
+      useEffect(() => { sizeR.current    = sentSize; }, [sentSize]);
+
+      // ── Service Worker registration ──────────────────────────────
+      useEffect(() => {
+        if (!('serviceWorker' in navigator)) { setSwStatus('unavailable'); return; }
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => {
+            setSwStatus('active');
+            // Controller may not exist yet on first install — wait for it
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({ type: 'SYNC', lastCatch });
+            } else {
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch });
+              }, { once: true });
+            }
+          })
+          .catch(() => setSwStatus('unavailable'));
+      }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+      // ── Keep SW in sync when lastCatch changes ───────────────────
+      useEffect(() => {
+        if (swStatus === 'active') {
+          navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch });
+        }
+      }, [lastCatch, swStatus]);
+
+      // ── Hand off between page timer ↔ SW timer ───────────────────
+      // When tab hides: SW takes over.  When tab shows: SW stops, page runs.
+      useEffect(() => {
+        if (swStatus !== 'active') return;
+        const handle = () => {
+          const ctrl = navigator.serviceWorker.controller;
+          if (!ctrl) return;
+          if (document.hidden) {
+            ctrl.postMessage({ type: 'SYNC', lastCatch });
+          } else {
+            ctrl.postMessage({ type: 'STOP' });
+          }
+        };
+        document.addEventListener('visibilitychange', handle);
+        return () => document.removeEventListener('visibilitychange', handle);
+      }, [lastCatch, swStatus]);
+
+      // ── Persist ─────────────────────────────────────────────────
+      useEffect(() => {
+        try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sound })); } catch(_) {}
+      }, [lastCatch, serverName, memberCount, sentSize, sound]);
+
+      // ── Main timer ──────────────────────────────────────────────
+      useEffect(() => {
+        tickR.current    = 60;
+        cmdIdxR.current  = 0;
+        cmdTickR.current = randCmdInterval();
+        prevPhR.current  = 'RESTING';
+
+        const id = setInterval(() => {
+          const el = Math.floor((Date.now() - lastCatch) / 1000);
+          setElapsed(el);
+
+          let ph = 'RESTING';
+          if (el >= TRIGGERING_START)      ph = 'TRIGGERING';
+          else if (el >= PRIMING_START) ph = 'PRIMING';
+          setPhase(ph);
+
+          // Phase transition
+          if (ph !== prevPhR.current) {
+            if (!standbyR.current) {
+              if (ph === 'PRIMING') {
+                playSound('priming', soundR.current);
+                if (notifR.current) fireNotif('🟡 Priming Started', 'Send a sentence now to prime the spawn!');
+              } else if (ph === 'TRIGGERING') {
+                playSound('triggering', soundR.current);
+                if (notifR.current) fireNotif('🟢 TRIGGERING!', 'Ball window is OPEN. Send now!');
+              }
+            }
+            if (ph === 'PRIMING' || ph === 'TRIGGERING') tickR.current = 1;
+            prevPhR.current = ph;
+          }
+
+          // Sentence refresh (every 60s in PRIMING + TRIGGERING)
+          if (ph === 'PRIMING' || ph === 'TRIGGERING') {
+            tickR.current--;
+            setTick(tickR.current);
+            if (tickR.current <= 0) {
+              const s = generateSentence(sizeR.current);
+              setSentence(s);
+              const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+              setFeed(prev => [{ts, s, c:'', ph}, ...prev].slice(0,8));
+              if (!standbyR.current) {
+                playSound('sentence', soundR.current);
+                if (notifR.current && ph === 'TRIGGERING') fireNotif('🟢 Send Now!', s);
+              }
+              tickR.current = 60; setTick(60);
+            }
+          }
+
+          // Command refresh (every 15–30 min in TRIGGERING only)
+          if (ph === 'TRIGGERING') {
+            cmdTickR.current--;
+            if (cmdTickR.current <= 0) {
+              const c = CMDS[cmdIdxR.current % CMDS.length];
+              cmdIdxR.current++;
+              setCommand(c);
+              const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+              setFeed(prev => [{ts, s:'', c, ph}, ...prev].slice(0,8));
+              if (!standbyR.current) {
+                playSound('sentence', soundR.current);
+                if (notifR.current) fireNotif('🟢 Use Command Now!', c);
+              }
+              cmdTickR.current = randCmdInterval();
+            }
+          }
+        }, 1000);
+
+        return () => clearInterval(id);
+      }, [lastCatch]);
+
+      // ── Handlers ────────────────────────────────────────────────
+      const reset = useCallback((ts = Date.now()) => {
+        setLastCatch(ts); setSentence(''); setCommand('');
+        setTick(60); tickR.current = 60; cmdIdxR.current = 0; cmdTickR.current = randCmdInterval();
+      }, []);
+
+      const caught = useCallback(() => { playSound('caught', soundR.current); reset(); }, [reset]);
+      const miss   = useCallback(() => reset(), [reset]);
+      const sync   = useCallback(ts => reset(ts), [reset]);
+
+      const toggleNotifs = useCallback(async () => {
+        if (notifs) { setNotifs(false); return; }
+        if (typeof Notification === 'undefined') return;
+        const p = await Notification.requestPermission();
+        if (p === 'granted') setNotifs(true);
+      }, [notifs]);
+
+      // ── Derived ─────────────────────────────────────────────────
+      const showContent = phase === 'PRIMING' || phase === 'TRIGGERING';
+      const showCmd     = phase === 'TRIGGERING';
+
+      const coolPct  = Math.min(100, (elapsed / PRIMING_START) * 100);
+      const primePct = phase === 'PRIMING' ? Math.min(100, ((elapsed - PRIMING_START) / (TRIGGERING_START - PRIMING_START)) * 100) : 0;
+      const sentPct  = Math.min(100, ((60 - tick) / 60) * 100);
+      const restDown = Math.max(0, PRIMING_START - elapsed);
+      const primDown = Math.max(0, TRIGGERING_START - elapsed);
+
+      const PHASE_CFG = {
+        RESTING:    { label:'Cooling Down',                  icon:'⬛', color:'#64748B', badge:'text-slate-400 bg-slate-500/10 border-slate-500/20',   bg:'' },
+        PRIMING:    { label:'Priming — Send a Sentence',     icon:'🟡', color:'#F59E0B', badge:'text-amber-400 bg-amber-500/10 border-amber-500/20',    bg:'phase-prime-bg' },
+        TRIGGERING: { label:'TRIGGERING — SEND NOW',         icon:'🟢', color:'#10B981', badge:'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', bg:'phase-trig-bg' },
+      };
+      const cfg = PHASE_CFG[phase] || PHASE_CFG.RESTING;
+
+      /* ── RENDER ─────────────────────────────────────────────────*/
+      return (
+        <div className={`flex flex-col h-screen overflow-hidden relative ${cfg.bg}`} style={{zIndex:1}}>
+
+          {/* Standby overlay */}
+          {standby && (
+            <div className="fixed inset-0 z-40 flex flex-col items-center justify-center anim-fade-in"
+                 style={{background:'rgba(0,0,0,.78)',backdropFilter:'blur(8px)'}}>
+              <div className="text-5xl mb-3 opacity-20">💤</div>
+              <p className="text-lg font-semibold text-slate-300 mb-1">Standby Mode</p>
+              <p className="text-sm text-slate-600 mb-2">Notifications silenced. Timer still running.</p>
+              <div className="font-mono text-5xl font-bold text-white/20 mb-6">{fmt(elapsed)}</div>
+              <button onClick={()=>setStandby(false)} className="btn px-7 py-3 text-sm text-white font-semibold"
+                      style={{background:'var(--indigo)',border:'1px solid rgba(99,102,241,.4)'}}>▶ Wake Up</button>
+            </div>
+          )}
+
+          {/* ── HEADER ──────────────────────────────────────────── */}
+          <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 border-b"
+                  style={{background:'rgba(0,0,0,.35)',borderColor:'var(--border)',backdropFilter:'blur(24px)',zIndex:10}}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white"
+                   style={{background:'var(--indigo)'}}>⚡</div>
+              <span className="text-sm font-semibold text-white">BallsDex</span>
+              <span className="text-sm font-semibold text-slate-600">Spawn Commander</span>
+              {serverName && <span className="text-xs text-slate-700 hidden sm:inline">· {serverName}</span>}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.badge}`}>
+                <span className={`phase-dot ${phase !== 'RESTING' ? 'pulsing' : ''}`} style={{background: cfg.color}} />
+                {cfg.label}
+              </span>
+              <button onClick={()=>setShowBalls(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
+                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>📖</button>
+              <button onClick={()=>setStandby(!standby)}
+                      className={`btn px-3 py-1.5 text-xs font-semibold ${standby?'text-indigo-400':'text-slate-500 hover:text-white'}`}
+                      style={{background:standby?'var(--indigo-dim)':'var(--s2)',border:`1px solid ${standby?'rgba(99,102,241,.3)':'var(--border)'}`}}>
+                {standby ? '▶ Wake' : '💤 Rest'}
+              </button>
+            </div>
+          </header>
+
+          {/* ── BODY ────────────────────────────────────────────── */}
+          <div className="flex flex-1 overflow-hidden" style={{position:'relative',zIndex:1}}>
+
+            {/* LEFT PANEL */}
+            <aside className="w-64 xl:w-72 flex-shrink-0 flex flex-col overflow-y-auto border-r gap-3 p-3"
+                   style={{borderColor:'var(--border)',background:'rgba(0,0,0,.22)'}}>
+
+              {/* Server Info */}
+              <section className="glass rounded-xl p-3.5 card-lift">
+                <p className="section-label">Server</p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1">Name / ID</label>
+                    <input className="inp text-xs" placeholder="My Discord Server" value={serverName} onChange={e=>setServerName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1">Members</label>
+                    <select className="inp text-xs" value={memberCount} onChange={e=>setMemberCount(e.target.value)}>
+                      <option value="small">Small (1–5)</option>
+                      <option value="medium">Medium (6–20)</option>
+                      <option value="large">Large (21–100+)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1">Sentence Length</label>
+                    <select className="inp text-xs" value={sentSize} onChange={e=>setSentSize(e.target.value)}>
+                      <option value="small">Short</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Long</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              {/* Actions */}
+              <section className="glass rounded-xl p-3.5 card-lift">
+                <p className="section-label">Actions</p>
+                <div className="space-y-2">
+                  <button onClick={e => { addRipple(e); caught(); }} className="btn btn-caught w-full py-4 text-base font-bold">
+                    ✅ CAUGHT!
+                  </button>
+                  <button onClick={e => { addRipple(e); miss(); }} className="btn btn-miss w-full py-2.5 text-sm font-semibold">
+                    ❌ MISS!
+                  </button>
+                  <button onClick={()=>setShowSync(true)} className="btn btn-ghost w-full py-2.5 text-xs font-medium">
+                    🕐 Sync Last Catch
+                  </button>
+                </div>
+              </section>
+
+              {/* Settings */}
+              <section className="glass rounded-xl p-3.5 card-lift">
+                <p className="section-label">Settings</p>
+                <div className="space-y-1.5">
+                  {[
+                    { label:'Sound',          on:sound,  toggle:()=>setSound(!sound)  },
+                    ...(notifOk ? [{ label:'Browser Alerts', on:notifs, toggle:toggleNotifs }] : []),
+                  ].map(({label,on,toggle}) => (
+                    <div key={label} className="toggle-row" onClick={toggle}>
+                      <span className="text-xs text-slate-400">{label}</span>
+                      <div className={`toggle-track ${on ? 'on' : 'off'}`}>
+                        <div className="toggle-thumb" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <div className="flex-1" />
+              {swStatus === 'active' && (
+                <p className="text-xs text-center text-emerald-800 pb-1">● Background alerts active</p>
+              )}
+              {swStatus === 'unavailable' && (
+                <p className="text-xs text-center text-amber-900 pb-1 leading-relaxed">
+                  Background alerts need localhost.<br/>
+                  Run: <span className="font-mono">npx serve .</span>
+                </p>
+              )}
+              <p className="text-xs text-center text-slate-800 pb-1">v2 · data persisted locally</p>
+            </aside>
+
+            {/* RIGHT PANEL */}
+            <main className="flex-1 overflow-y-auto p-4 space-y-3">
+
+              {/* Phase + Clock card */}
+              <section className={`glass rounded-2xl p-6 text-center ${phase==='TRIGGERING'?'trig-ring':''}`} style={{position:'relative'}}>
+                <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border mb-4 ${cfg.badge}`}>
+                  <span className={`phase-dot ${phase !== 'RESTING' ? 'pulsing' : ''}`} style={{background: cfg.color}} />
+                  <span className="uppercase tracking-widest">{cfg.label}</span>
+                </div>
+                <div className="font-mono font-bold text-white leading-none mb-2"
+                     style={{fontSize:'clamp(2.8rem,7vw,4.5rem)',letterSpacing:'0.09em'}}>
+                  {fmt(elapsed)}
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-700 mb-5">Time Since Last Catch</p>
+
+                {phase === 'RESTING'    && <Bar pct={coolPct}  color="#64748B" label="Cooling down"  sub={`Priming in ${fmtDown(restDown)}`} />}
+                {phase === 'PRIMING'    && <Bar pct={primePct} color="#F59E0B" label="Priming phase" sub={`Trigger in ${fmtDown(primDown)}`} />}
+                {phase === 'TRIGGERING' && <Bar pct={sentPct}  color="#10B981" label="Next sentence" sub={`${tick}s`} />}
+              </section>
+
+              {/* Resting hint */}
+              {phase === 'RESTING' && (
+                <section className="glass rounded-xl px-5 py-3.5 text-center anim-slide-up">
+                  <p className="text-sm text-slate-500">
+                    No action needed. Priming begins at <span className="font-mono text-white">12:00</span>.
+                  </p>
+                </section>
+              )}
+
+              {/* Content box */}
+              {showContent && (
+                <section className="glass rounded-xl p-4 anim-slide-up">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+                      {showCmd ? '🟢 Send This Now' : '🟡 Send This Sentence'}
+                    </p>
+                    <span className="text-xs font-mono text-slate-700">Next in {tick}s</span>
+                  </div>
+
+                  {sentence ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-white leading-relaxed">{sentence}</p>
+                      <CopyButton text={sentence} label="Copy Sentence" block />
+
+                      {showCmd && command && (
+                        <div className="border-t pt-3 space-y-2" style={{borderColor:'var(--border)'}}>
+                          <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Discord Command</p>
+                          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                               style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.2)'}}>
+                            <code className="flex-1 text-sm font-mono font-bold text-indigo-300">{command}</code>
+                            <CopyButton text={command} label="Copy" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-700 italic">Generating…</p>
+                  )}
+                </section>
+              )}
+
+              {/* Live feed */}
+              {feed.length > 0 && (
+                <section className="glass rounded-xl p-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-3">Live Feed</p>
+                  <div className="space-y-1.5">
+                    {feed.map((item, i) => (
+                      <div key={i} className="flex gap-2.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/5"
+                           style={{background:'var(--s0)',border:'1px solid var(--border)',opacity:Math.max(0.25,1-i*0.11)}}>
+                        <span className="font-mono text-xs pt-0.5 flex-shrink-0 text-slate-700">{item.ts}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-400 truncate">{item.s}</p>
+                          {item.c && <p className="text-xs font-mono text-indigo-500 mt-0.5">{item.c}</p>}
+                        </div>
+                        <span className="text-xs flex-shrink-0 pt-0.5">{item.ph==='TRIGGERING'?'🟢':'🟡'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+            </main>
+          </div>
+
+          {/* Modals */}
+          {showBalls && <BallModal onClose={()=>setShowBalls(false)} />}
+          {showSync  && <SyncModal onClose={()=>setShowSync(false)} onSync={sync} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
