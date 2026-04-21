@@ -293,111 +293,113 @@
     const randCmdInterval  = () => 900 + Math.floor(Math.random() * 900); // 15–30 min in seconds
 
     /* ═══════════════════════════════════════════════════════════════
-       SENTENCE ENGINE — 100+ unique high-entropy rants
+       SENTENCE ENGINE — fully generative, infinite unique output
     ═══════════════════════════════════════════════════════════════ */
-    const RANTS_SHORT = [
-      "My router disconnected exactly during the one call I actually needed to attend.",
-      "Every microwave I've owned has had a turntable that derails itself by week three.",
-      "Someone used 'reply all' correctly once and I'm still trying to find them to say thank you.",
-      "The self-checkout machine accused me of a bagging irregularity and I have not healed.",
-      "My phone charger works perfectly until the moment it's plugged into the wall.",
-      "There is a passive-aggressive note on the office microwave raising more questions than it answers.",
-      "The printer produced the test page beautifully and immediately retired from actual work.",
-      "Every store has exactly one checkout open and the person ahead of me is doing a refund.",
-      "My smart TV remote requires three clicks to unpause, which I have started to take personally.",
-      "The Wi-Fi is strongest in the bathroom and I've accepted this as intentional design.",
-      "My laptop fan began screaming during a presentation and I pretended not to notice.",
-      "The grocery app marked an item as available and then marked it unavailable at checkout.",
-      "Someone scheduled a meeting to plan when the next meeting should happen and I attended both.",
-      "My air fryer has four presets and I have used exactly one of them for two years.",
-      "The USB drive was not recognized and then recognized and then not recognized again in sequence.",
-      "A software update moved the save button and I haven't been the same person since.",
-      "My thermostat learned my schedule and then confidently implemented the wrong one.",
-      "The streaming service asked if I was still watching after twenty minutes of autoplaying content.",
-      "Daylight saving time happened and three of my seven clocks still haven't been told.",
-      "The Bluetooth headphones connected to the wrong device for the forty-seventh consecutive time.",
-    ];
+    const _SENT_USED = new Set(); // prevent short-run repeats
 
-    const RANTS_MEDIUM = [
-      "My router has operated flawlessly for eight months and chose today, of all days, to start disconnecting every forty seconds with no explanation available in any manual.",
-      "The self-checkout told me to place my item in the bagging area and then immediately flagged an unexpected item in the bagging area, which was the item I had just placed there per its instruction.",
-      "Someone explained the new Slack notification hierarchy to me and I nodded for six minutes while understanding nothing, and I consider that a successful meeting.",
-      "My laptop ran a system update exactly when I needed to share my screen, a reminder that the device has its own schedule and I am a guest on it.",
-      "My coffee maker has five brew strength settings, three of which produce outcomes I cannot distinguish, one I use daily, and one I am afraid to press.",
-      "The grocery store rearranged its entire layout and I found the pasta next to the wine, which is either a mistake or a philosophy and I'm not sure which.",
-      "My phone was at 71% when I left the house and 28% when I sat down, with no activity between those two events that I can account for.",
-      "There is a variety of person who joins a video call two minutes late and then needs everything recapped, and I have now met that person in every organization I have ever been part of.",
-      "My Bluetooth headphones connected to my laptop and my phone simultaneously, played audio from neither, and then disconnected from both while I was looking directly at them.",
-      "The smart plug app sent me a notification that my lamp turned on, which is accurate but not information I required at 2:47 in the morning.",
-      "Every printer I have owned has detected low ink precisely when I needed to print something, leading me to believe this is less coincidence and more positioning.",
-      "The navigation app rerouted me three times in four minutes, and I arrived seven minutes later than I would have if I had simply remembered the way from last time.",
-      "My email client grouped three conversations under one thread, two of which are unrelated, and I have to scroll past both to find the one I actually need.",
-      "The subscription cancellation flow asked me four times if I was sure, then offered me a discount that would have prevented the cancellation if it had been offered at any prior point.",
-      "I have owned this password manager for two years and it still occasionally tells me my master password is wrong on the first attempt before accepting it unchanged on the second.",
-      "The calendar invite said the meeting was optional but when I declined, two people replied to ask if everything was okay, so it was not optional.",
-      "My smart doorbell sent me a motion alert about a leaf, which it has now done six times today, and I don't know how to explain to it that this is not the threat model I was concerned about.",
-      "The help desk ticket said it was resolved and closed, and when I reopened it to explain that it was not resolved, a new ticket was created and also closed.",
-      "Someone put a 'Quick Question' in the subject line of an email that contained a question requiring three paragraphs and two attachments to answer.",
-      "My instant pot has a delay timer function that I've never used, a yogurt setting that I've questioned, and a sealing ring that somehow smells of every meal simultaneously.",
-    ];
+    const _W = {
+      device:   ['router','Bluetooth speaker','USB-C cable','printer','phone charger','laptop','wireless mouse','smart plug','HDMI cable','charging pad','monitor','webcam','external hard drive','smart bulb','mechanical keyboard','trackpad','docking station','smart TV','power bank','streaming stick','noise-canceling headphones','graphics tablet','mesh router','smart display'],
+      app:      ['food delivery app','navigation app','weather app','parking app','airline app','banking app','fitness tracker','streaming service','password manager','calendar app','email client','video call platform','note-taking app','cloud backup service','expense report tool','loyalty rewards app','project management tool','grocery delivery service','ride-share app','hotel booking app'],
+      kitchen:  ['microwave','toaster','coffee maker','blender','air fryer','instant pot','dishwasher','electric kettle','rice cooker','stand mixer','espresso machine','toaster oven','smart oven','sous vide device','ice maker'],
+      grocery:  ['self-checkout kiosk','express lane','scan-and-go terminal','produce scale','loyalty card reader','price-check station','automated receipt printer'],
+      place:    ['the airport','the coffee shop','the coworking space','the gym','the hotel room','the conference room','the waiting room','the parking structure','the office kitchen','the elevator lobby','the pharmacy'],
+      transit:  ['bus','train','rideshare','subway','tram','ferry'],
+      person:   ['person who asks a question answered two slides earlier','person who replies-all with a single word of agreement','person who microwaves fish at eleven in the morning','person who books the conference room and leaves without canceling','person who explains things no one requested an explanation for','person who joins eight minutes late with elaborate context','person who schedules a meeting to discuss scheduling future meetings','person who responds to every email within four seconds at all hours'],
+      social:   ['reply-all email chains','mandatory wellness check-ins','passive-aggressive signage in shared spaces','optional-but-recorded team events','the unannounced desk visit','ambient competitive busyness','the birthday cake protocol','the group chat that benefits no one specifically','the standing desk discourse','the open-plan silence norms','the kitchen hierarchy','unsolicited dietary commentary'],
+      fail:     ['disconnected','froze','overheated','started a background update','beeped without a documented reason','lost the connection','stopped responding','restarted without warning','drained entirely','refused to sync','displayed an error I had not encountered before','connected to the wrong device','emitted a sound I cannot categorize','required a reboot to return to baseline'],
+      timing:   ['a critical video call','the one deadline that mattered','dinner','the only quiet stretch of the day','a live demonstration','the final ten minutes of something important','a point of no return in the process','a conversation I could not pause','exactly when I needed it most','a presentation I could not restart'],
+      reaction: ['I have not recovered emotionally','I consider this still unresolved','I have accepted it as a recurring feature','I am still processing it','I have adjusted my expectations permanently in this direction','I respect the consistency if not the outcome','I have added it to a list I now maintain','I have reached a state of informed resignation'],
+      duration: ['eight months','a year and a half','six weeks','three years','fourteen months','well over a year','longer than I would like to admit','the entire time I have owned it'],
+      setting:  ['setting','mode','preset','option','function','configuration'],
+      count:    ['three','four','five','six','seven','eight'],
+      outcome:  ['identical results I cannot distinguish','outcomes I would describe the same way','results that suggest the range is aspirational rather than functional'],
+      appDid:   ['sent a notification for an event that had already concluded','required reverification for a transaction I make every month','rerouted me four times in six minutes','recommended content I had explicitly dismissed','removed a feature I used daily in an update described as minor','asked me to rate the experience before the experience was complete','marked an item available and then unavailable within the same session','sent a summary of an activity I did not perform','notified me of a change I had already discovered by encountering it','offered a discount that would have resolved my cancellation if shown at any prior point'],
+      transit_did: ['arrived eleven minutes early','departed before the scheduled time','showed two minutes away for nineteen minutes','ceased location updates at the most relevant moment','skipped my stop without acknowledgment','added an unscheduled stop between my origin and destination'],
+      loop_doc: ['a document I can only obtain by submitting a form that requires it','information only available after completing the process it is required to begin','a verification step that requires the account I am trying to create'],
+      feature:  ['a delay timer I have never used','a setting I have read about and remain cautious about','a function I discovered by accident and have not been able to re-trigger','an option that the manual describes as advanced without clarifying the baseline'],
+    };
 
-    const RANTS_LONG = [
-      "I would like to speak with whoever decided the correct number of USB-C cables for a functional life is somewhere between five and not quite enough, because I currently own seven cables and the one I need is never in the room I'm in.",
-      "The software update installed last night added two features I will never use, removed a keyboard shortcut I relied on seventeen times daily, moved the settings menu to a location I haven't found yet, and I consider that an accurate representation of product development velocity.",
-      "My refrigerator makes a sound every forty minutes that the manufacturer FAQ describes as normal operation and that I would describe as a noise with opinions, and I'm not sure which of us has the fuller picture.",
-      "I have been using the same self-checkout machine at the same store for three years and it still requires me to confirm I do not have a loyalty card at every single visit, which suggests we have not made as much progress in this relationship as I had assumed.",
-      "The corporate onboarding video told me to think outside the box, leverage our core synergies, and embrace disruptive innovation across twenty-two minutes, and I emerged from it with less practical information than I had entered with, which in retrospect was probably the most disruptive thing to happen that day.",
-      "My smart thermostat has been in learning mode for sixteen months and has concluded that I want the house at 68 degrees at 3am and 74 degrees at 7am, which is the exact opposite of my measured preferences in every direction and I am impressed by the consistency of its wrongness.",
-      "Every time I try to cancel a subscription I am walked through a five-step confirmation flow asking me why I'm leaving, offering me a pause option, showing me what I'll lose, then offering a 40% discount that would have resolved the situation if it had been offered at literally any point before I clicked cancel.",
-      "I have explained my dietary restrictions to this restaurant three times and each time I receive a dish that contains exactly the ingredient I mentioned, which makes me think the note-taking system has a step missing somewhere between the server and the kitchen.",
-      "My work laptop requires a VPN, a two-factor authentication app, a separate browser profile, and a hardware token to access the internal wiki, which is a remarkable amount of infrastructure protecting documentation that is mostly out of date.",
-      "The agile sprint planning session was scheduled for three hours, ran for four, produced a backlog of forty-seven items, and resulted in a commitment to deliver six of them, which is either very efficient or very inefficient depending on how you define both of those words.",
-      "I have been ignoring the 'storage almost full' notification on my phone for approximately eight months, taking no action, and somehow the phone has continued to function without consequence, which raises questions about how serious the warning was in the first place.",
-      "The terms of service update email said the changes were minor, the document was forty-one pages, and clicking 'I agree' was required to continue using a service I had already paid for, which is a negotiating position I respect in its audacity.",
-      "My keyboard has a function key row and a separate dedicated function lock key, and despite four years of use I cannot reliably predict which mode I'm in until after I've pressed the wrong key during something important.",
-      "The package tracking page has shown 'out for delivery' since 9am and it is now 6pm, which means either the driver is having a very full day or the definition of 'out for delivery' is doing more work than I had previously understood.",
-      "I sent a message in the wrong Slack channel, deleted it, but three people had already seen it and reacted with a thumbs up, so now I'm unsure whether to address it or whether the thumbs up was a gesture of solidarity in the ambiguity.",
-    ];
+    const _p = k => _W[k][Math.floor(Math.random() * _W[k].length)];
+    const _cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+    // Template library — functions so each call draws fresh words
+    const _TEMPLATES = {
+      small: [
+        () => `My ${_p('device')} ${_p('fail')} during ${_p('timing')} and ${_p('reaction')}.`,
+        () => `The ${_p('app')} ${_p('appDid')} and I am filing this under things to revisit.`,
+        () => `${_cap(_p('social'))} is something I participated in without fully understanding and have not stopped thinking about since.`,
+        () => `My ${_p('kitchen')} made a sound this morning that I have decided to accept as a personality trait rather than investigate.`,
+        () => `The ${_p('grocery')} experience was ${_p('reaction').replace('I ', 'something ')} and I am still processing it.`,
+        () => `I have used my ${_p('kitchen')} for ${_p('duration')} and discovered ${_p('feature')} last week.`,
+        () => `My ${_p('transit')} ${_p('transit_did')} and the app had no position on any of this.`,
+        () => `${_cap(_p('place'))} had exactly one outlet near a useful surface and someone had found it before me.`,
+        () => `My ${_p('device')} has ${_p('count')} ${_p('setting')}s and I have made a decision about each of them that I stand by.`,
+        () => `The ${_p('app')} ${_p('appDid')}, which I found accurate but poorly sequenced.`,
+        () => `There is a ${_p('person')} and I have met them in multiple contexts I would not have expected.`,
+        () => `My ${_p('device')} connects to the wrong device consistently and I have adjusted my workflow around this without resolving it.`,
+        () => `The ${_p('kitchen')} has ${_p('feature')} and I am not ready to engage with it.`,
+        () => `I declined the ${_p('app')} notification permission once and it has asked again every session since.`,
+        () => `My ${_p('device')} ${_p('fail')} and then recovered as though nothing had occurred, and I found that harder to process than the failure.`,
+        () => `The ${_p('grocery')} process has been optimized at every visible stage except the one I am currently at.`,
+        () => `${_cap(_p('place'))} listed every amenity I needed except one, which I confirmed after a thorough search.`,
+        () => `Someone brought ${pick(['a scented candle','a Bluetooth speaker','a very loud lunch','a standing fan that requires context'])} to the shared workspace and nobody addressed it directly.`,
+        () => `My ${_p('app')} sent me ${_p('count')} notifications today about things that had already resolved themselves.`,
+        () => `The ${_p('transit')} app showed my arrival time updating in real time in a direction I found surprising.`,
+      ],
+      medium: [
+        () => `The fact that my ${_p('device')} ${_p('fail')} during ${_p('timing')} is not something I will categorize as routine from a device I have maintained without incident for ${_p('duration')}.`,
+        () => `My ${_p('kitchen')} has ${_p('count')} ${_p('setting')}s, ${pick(['two','three'])} of which produce ${_p('outcome')}, one I use, and ${_p('feature')} I am treating as a future consideration.`,
+        () => `There is a ${_p('person')} and I have encountered them in every organization I have been part of, which suggests this is a stable property of groups rather than any particular group.`,
+        () => `The ${_p('app')} ${_p('appDid')}, which is technically correct on its part and technically not what I needed from it, and I am not sure how to describe the space between those two things.`,
+        () => `Nobody explained why ${_p('social')} became the format used for this situation, but everyone participates with the confidence of someone who helped design it.`,
+        () => `My ${_p('device')} performed without incident for ${_p('duration')} and then ${_p('fail')} during ${_p('timing')}, which retroactively changed how I think about the reliability I had attributed to that period.`,
+        () => `I have accumulated points in this ${_p('app')} loyalty program for ${_p('duration')} and the total has never crossed the minimum redemption threshold, and I am beginning to understand the structure of this arrangement.`,
+        () => `The ${_p('place')} contained every listed amenity except the one I required, which I confirmed after a search I would describe as both thorough and optimistic.`,
+        () => `My ${_p('transit')} ${_p('transit_did')} and I have updated my departure time in response, and the transit has updated its behavior in response to my adjustment, and this has continued.`,
+        () => `I received an email describing the upcoming ${_p('app')} changes as minor, and the document enumerating those changes was longer than anything the app had previously communicated to me about itself.`,
+        () => `My ${_p('device')} has ${_p('feature')} that I discovered after ${_p('duration')} of ownership, and this has not changed how I use it but has changed how I think about what else I might not know about it.`,
+        () => `The ${_p('app')} support flow routed me through ${_p('count')} menus, confirmed my issue was understood, and closed the ticket without addressing the issue, which I found efficient in a specific and unhelpful direction.`,
+        () => `I set up ${_p('app')} to simplify a task and it has simplified the task while adding ${_p('count')} new tasks related to managing the simplification, and I am still assessing the net position.`,
+        () => `${_cap(_p('social'))} has been part of this environment for ${_p('duration')} and nobody has acknowledged it directly, which I now find more interesting than the thing itself.`,
+        () => `My ${_p('kitchen')} requires a step that is not in the instructions and that I discovered through a failure I have now repeated enough times to consider it a learning outcome.`,
+        () => `The ${_p('app')} asked me to rate my experience while I was still in the middle of the experience, which created a philosophical problem I was not positioned to solve at that moment.`,
+        () => `I have explained the situation to ${_p('count')} representatives and each one confirmed it was being escalated, and I have developed a working theory about what escalated means in this organization.`,
+        () => `The update to my ${_p('device')} added ${_p('count')} features I will not use, removed one I relied on daily, and moved a setting to a location I have checked ${_p('count')} times without finding it.`,
+      ],
+      large: [
+        () => `My ${_p('device')} performed without complaint for ${_p('duration')} and then decided that ${_p('fail')} during ${_p('timing')} was its defining characteristic going forward, with no warning, no documentation of what changed, and no acknowledgment that a previous standard had existed.`,
+        () => `What I find most interesting about ${_p('social')} is not that it exists, but that everyone involved behaves as though it was designed with intention, when the available evidence suggests it arrived gradually and was simply never questioned at any point during its arrival or consolidation.`,
+        () => `My ${_p('kitchen')} has ${_p('count')} ${_p('setting')}s, and I have tested each of them with reasonable care, and the results suggest that either the range is wider than the outcomes it produces, or I am operating it in a way that collapses the distinction, and I am not sure which conclusion is more instructive.`,
+        () => `The ${_p('app')} has ${_p('appDid')} for the third time this month, and I have adjusted my behavior in response, and the app has adjusted in response to my adjustment, and we are now in a dynamic that neither of us entered intentionally but that we are both maintaining through momentum.`,
+        () => `I attempted to cancel my ${_p('app')} subscription and was presented with ${_p('count')} confirmation screens, a pause option, a summary of what I would lose, and a discount that would have resolved my reason for canceling if it had been offered at literally any point before I clicked cancel, which is a sequencing decision I find structurally interesting.`,
+        () => `There is a form that requires information only found on ${_p('loop_doc')}, and I have been considering this loop long enough to understand it structurally while remaining unable to enter it through any available starting point.`,
+        () => `My ${_p('device')} has been in my possession for ${_p('duration')} and I have used ${pick(['one','two','perhaps three'])} of its documented features with regularity, and I am genuinely uncertain whether the remaining features represent accessible value or complexity added to justify a price point I have already paid.`,
+        () => `I have explained my situation to ${_p('count')} different people at the same organization, each of whom acknowledged the situation fully and confirmed it was being escalated, and I have now developed a working theory about what the word escalated means in this specific institutional context.`,
+        () => `The ${_p('transit')} system operates on a schedule that is accurate on average, distributed in a way that is locally unpredictable, and communicated by an app that presents the average as the specific with a confidence I have come to admire entirely separately from whether that confidence is useful.`,
+        () => `My ${_p('device')} has ${_p('feature')} that I discovered after ${_p('duration')} of daily use, and I am now in the position of not knowing how many other features exist that I have not yet found, which is either reassuring or concerning depending on which direction I approach it from.`,
+        () => `The ${_p('app')} sent me a notification while I was actively using it to inform me of something I would have seen immediately if the notification had not covered the relevant portion of the screen, which is a coordination failure I did not expect to encounter at this stage of the product's development.`,
+        () => `There is a ${_p('person')} in every organization I have been part of and I have spent time trying to determine whether this is a selection effect, a universal feature of organizations, or something I am generating through my own behavior, and I do not have a conclusive answer but I have formed a working hypothesis.`,
+        () => `The ${_p('grocery')} process has been optimized at every stage I can observe, and the stage I am currently at retains the original friction, which means either the optimization is incomplete or this stage is considered load-bearing and I am the load.`,
+      ],
+    };
+
+    // these placeholders are removed; kept only to avoid reference errors
+    const RANTS_SHORT = [], RANTS_MEDIUM = [], RANTS_LONG = [];
 
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
     function generateSentence(size) {
-      // Algorithmic supplements so the pool never exhausts
-      const tech    = ['router','Bluetooth speaker','USB-C cable','printer','phone charger','laptop fan','wireless mouse','smart plug','HDMI cable','charging pad'];
-      const kitchen = ['microwave','toaster','coffee maker','blender','air fryer','instant pot','dishwasher','electric kettle'];
-      const grocery = ['self-checkout','express lane','loyalty card app','shopping cart','produce scale','paper receipt printer'];
-      const social  = ['unsolicited advice','reply-all emails','awkward elevator rides','mandatory fun events','passive-aggressive sticky notes','optional-but-really-mandatory meetings'];
-      const failV   = ['disconnects','freezes','overheats','starts updating itself','beeps at random','loses the signal','stops responding'];
-      const timing  = ['a critical video call','the one deadline that mattered','dinner','the only quiet moment of the day','exactly when I needed it','right as I was finishing'];
-      const adj     = ['suspicious','historically unprecedented','specifically targeted','a design choice I cannot explain','the kind of irony you cannot manufacture'];
-
-      const algo = {
-        small: [
-          `My ${pick(tech)} chose to ${pick(failV)} during ${pick(timing)} and I have not recovered emotionally.`,
-          `The ${pick(grocery)} experience was ${pick(adj)} and I am still thinking about it.`,
-          `${pick(social).charAt(0).toUpperCase() + pick(social).slice(1)} is not something I was prepared for and yet here we are.`,
-          `My ${pick(kitchen)} made a noise this morning that I have simply decided to accept as its personality.`,
-        ],
-        medium: [
-          `The fact that my ${pick(tech)} ${pick(failV)} during ${pick(timing)} is something I will never fully accept as routine behavior from a device I purchased in good faith.`,
-          `There is a type of person who holds up the ${pick(grocery)} line at the worst moment and I have met them in every city I have visited.`,
-          `My ${pick(kitchen)} has four settings, three of which produce identical results, one I use, and one I am saving for an emergency that hasn't arrived.`,
-          `Nobody explained why ${pick(social)} became normalized but here we all are participating in it as though it made sense from the beginning.`,
-        ],
-        large: [
-          `The thing about my ${pick(tech)} is that it performs without complaint for months and then decides that ${pick(failV)} during ${pick(timing)} is its defining characteristic now, with zero warning and zero documentation of what changed.`,
-          `What I find most striking about ${pick(social)} is not that it exists, but that everyone involved has silently agreed to pretend it is a perfectly calibrated response to the situation, when clearly no one designed it with intention.`,
-          `My ${pick(kitchen)} has developed a behavior over the past three months where it ${pick(failV)} at ${pick(timing)}, and everything I found online described it as either completely normal or early signs of a larger failure, which covers the full probability space but helps me not at all.`,
-        ],
-      };
-
-      const pools = {
-        small:  [...RANTS_SHORT, ...algo.small],
-        medium: [...RANTS_SHORT, ...RANTS_MEDIUM, ...algo.small, ...algo.medium],
-        large:  [...RANTS_MEDIUM, ...RANTS_LONG, ...algo.medium, ...algo.large],
-      };
-      return pick(pools[size] || pools.medium);
+      const pool = _TEMPLATES[size] || _TEMPLATES.medium;
+      let s;
+      for (let i = 0; i < 12; i++) {
+        s = pick(pool)();
+        if (!_SENT_USED.has(s)) break;
+      }
+      _SENT_USED.add(s);
+      if (_SENT_USED.size > 300) _SENT_USED.delete(_SENT_USED.values().next().value);
+      return s;
     }
+
 
     /* ═══════════════════════════════════════════════════════════════
        BALL DATA
@@ -843,7 +845,7 @@
       "North German Confederation":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/North%20German%20Confederation.webp",
       "African Union":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/African%20Union.webp",
       "Arab League":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Arab%20League.webp",
-      "Confederate States":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Confederate%20States.webp",
+      "Confederate States / CSA":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Confederate%20States.webp",
       "Gaul":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Gaul.webp",
       "Germania":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Germania.webp",
       "Indonesia":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Indonesia.webp",
@@ -1051,12 +1053,12 @@
       "Afghanistan":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Afghanistan.webp",
       "Albania":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Albania.webp",
       "Belize":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Belize.webp",
-      "Bosnia and Herzegovina":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Bosnia%20and%20Herzegovina.webp",
+      "Bosnia":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Bosnia%20and%20Herzegovina.webp",
       "Botswana":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Botswana.webp",
       "Cameroon":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Cameroon.webp",
       "Ceylon":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Ceylon.webp",
       "Congo":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Congo.webp",
-      "Cote d'Ivoire":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Cote%20d%27Ivoire.webp",
+      "Ivory Coast":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Cote%20d%27Ivoire.webp",
       "Dominican Republic":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Dominican%20Republic.webp",
       "Eritrea":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Eritrea.webp",
       "Estonia":"https://ballidentifier.xyz/assets/dexes/Ballsdex/compressed/Estonia.webp",
@@ -1205,7 +1207,7 @@
       "North German Confederation":[315,84,1,0,1,5,5,1,0,0,0,0,0,0,0,0,41,37,3,0,44,131,41,1,0,3,3,1,0,0,0,0,7,8,1,0,5,13,5,0,3,17,87,39,0,0,0,1,0,0,0,0,0,4,0,0,0,8,0,0,0,1,0,81],
       "African Union":[44,0,0,0,127,0,0,0,0,0,0,0,0,0,0,0,19,4,0,0,135,79,0,0,6,12,3,0,10,0,0,0,54,4,0,0,73,102,0,0,19,76,31,0,3,0,4,0,22,1,0,0,22,35,0,0,23,29,26,0,3,9,16,10],
       "Arab League":[31,0,0,0,19,37,1,0,0,2,1,4,0,0,0,4,17,2,0,0,0,77,0,0,2,26,14,5,0,0,0,2,17,17,0,0,0,30,4,0,0,4,69,2,0,0,16,2,10,9,0,0,0,12,2,0,1,2,37,2,0,30,77,406],
-      "Confederate States":[31,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,52,11,0,0,2,80,5,0,0,0,3,0,0,0,0,0,92,2,0,0,54,222,12,0,2,75,61,0,0,0,0,0,18,0,0,0,54,12,0,0,3,57,29,0,0,2,80,20],
+      "Confederate States / CSA":[31,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,52,11,0,0,2,80,5,0,0,0,3,0,0,0,0,0,92,2,0,0,54,222,12,0,2,75,61,0,0,0,0,0,18,0,0,0,54,12,0,0,3,57,29,0,0,2,80,20],
       "Gaul":[514,0,0,0,37,0,0,0,0,0,0,0,0,0,0,0,127,0,0,0,47,22,0,0,0,4,0,0,0,0,0,0,18,0,0,0,29,37,0,0,0,18,8,0,0,0,0,0,47,0,0,0,22,2,0,0,16,8,10,0,8,0,6,18],
       "Germania":[92,100,2,0,0,38,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,167,98,2,0,2,26,4,0,0,0,0,0,0,0,0,0,8,2,0,0,2,235,26,0,0,0,6,0,0,0,0,0,0,0,0,0,0,2,4,0,0,10,159],
       "Indonesia":[102,3,0,0,3,0,0,0,0,0,0,0,0,0,0,0,37,0,0,0,76,79,3,0,0,5,0,0,0,0,0,0,18,0,0,0,16,42,0,0,10,162,26,0,0,0,0,0,21,0,0,0,0,8,0,0,13,194,10,0,0,152,0,21],
@@ -1413,12 +1415,12 @@
       "Afghanistan":[293,133,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,13,11,0,8,51,24,0,0,8,0,0,0,0,0,0,11,13,0,3,0,0,27,11,0,5,122,8,0,0,8,0,0,8,0,0,0,27,0,0,0,0,0,53,0,0,0,141],
       "Albania":[53,5,0,0,0,0,2,0,0,0,0,0,0,0,0,0,97,12,0,0,8,13,0,0,0,2,0,0,0,0,0,0,58,25,2,0,25,56,5,0,0,25,2,0,0,0,0,0,142,33,0,0,31,35,12,0,13,30,43,13,2,12,36,211],
       "Belize":[95,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,38,3,0,2,41,25,0,0,0,0,0,0,0,0,0,23,22,0,0,0,177,98,0,0,27,42,0,0,0,0,0,2,8,0,0,2,31,0,0,0,9,161,2,0,0,161,19],
-      "Bosnia and Herzegovina":[574,57,0,0,0,0,0,0,0,0,0,0,0,0,0,0,119,17,0,0,59,73,0,0,0,0,0,0,0,0,0,0,4,0,0,0,27,34,0,0,0,8,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,6,0,0,0,0,4],
+      "Bosnia":[574,57,0,0,0,0,0,0,0,0,0,0,0,0,0,0,119,17,0,0,59,73,0,0,0,0,0,0,0,0,0,0,4,0,0,0,27,34,0,0,0,8,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,6,0,0,0,0,4],
       "Botswana":[193,34,0,0,0,203,36,0,0,0,40,32,0,0,0,30,0,0,0,0,0,55,40,0,0,0,114,102,0,0,0,97,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6],
       "Cameroon":[308,2,0,0,4,91,0,0,0,0,0,0,0,0,0,0,95,13,0,0,37,15,0,0,0,0,0,0,0,0,0,0,211,0,0,0,54,9,4,0,86,2,11,0,0,0,0,0,0,0,0,0,9,0,0,0,41,0,6,2,0,0,0,0],
       "Ceylon":[59,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,101,0,0,0,21,8,3,0,0,0,0,0,0,0,0,0,82,0,0,0,204,15,0,0,21,36,10,21,0,0,0,5,0,0,0,0,101,8,0,0,155,101,3,0,13,31,0,5],
       "Congo":[18,0,0,0,2,0,0,0,23,5,0,0,0,7,0,0,91,0,0,0,28,0,0,0,53,4,0,0,44,0,0,0,91,0,0,0,37,0,0,0,34,4,0,0,16,0,5,0,94,0,0,0,110,2,0,0,73,2,0,0,233,5,11,7],
-      "Cote d'Ivoire":[209,163,0,0,2,94,0,0,0,24,4,0,0,0,0,0,13,0,0,0,2,18,31,0,0,0,45,0,0,0,0,0,4,0,0,0,27,2,0,0,0,4,38,31,0,0,0,27,0,0,0,0,94,2,0,0,38,0,2,0,0,0,2,122],
+      "Ivory Coast":[209,163,0,0,2,94,0,0,0,24,4,0,0,0,0,0,13,0,0,0,2,18,31,0,0,0,45,0,0,0,0,0,4,0,0,0,27,2,0,0,0,4,38,31,0,0,0,27,0,0,0,0,94,2,0,0,38,0,2,0,0,0,2,122],
       "Dominican Republic":[18,18,3,0,20,10,0,0,12,35,0,0,0,0,0,0,0,5,15,0,2,2,26,2,3,21,2,0,0,8,0,0,0,2,51,0,0,7,105,30,0,0,13,41,15,16,0,0,0,0,5,0,2,0,77,43,61,8,74,64,110,8,2,64],
       "Eritrea":[127,0,0,0,0,0,0,0,0,44,0,0,0,0,0,0,12,2,0,0,8,10,0,0,4,107,0,0,0,0,0,0,119,8,0,0,30,58,0,0,14,78,2,0,0,0,0,0,36,0,0,0,131,30,0,0,38,89,12,0,0,4,2,36],
       "Estonia":[91,2,0,0,2,7,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,188,56,0,0,2,151,87,0,0,0,0,0,0,0,0,0,2,0,0,0,0,253,32,0,0,0,26,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,95],
@@ -2042,10 +2044,15 @@
 
       // ── Main timer ──────────────────────────────────────────────
       useEffect(() => {
-        lastSentR.current = 0;
+        const el0 = Math.floor((Date.now() - lastCatch) / 1000);
+        let initPh = 'RESTING';
+        if (el0 >= TRIGGERING_START) initPh = 'TRIGGERING';
+        else if (el0 >= PRIMING_START) initPh = 'PRIMING';
+        prevPhR.current  = initPh;
+        // Don't fire a sentence immediately on restore — wait the full interval
+        lastSentR.current = (initPh === 'RESTING') ? 0 : Date.now();
         cmdIdxR.current  = 0;
         cmdTickR.current = randCmdInterval();
-        prevPhR.current  = 'RESTING';
 
         const id = setInterval(() => {
           const el = Math.floor((Date.now() - lastCatch) / 1000);
