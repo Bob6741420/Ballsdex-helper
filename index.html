@@ -1812,6 +1812,8 @@
       const [query, setQuery] = useState('');
       const [scores, setScores] = useState(null);
       const [analyzing, setAnalyzing] = useState(false);
+      const [showGallery, setShowGallery] = useState(true);
+      const [copied, setCopied] = useState(false);
       const fileRef = useRef(null);
 
       const identify = useCallback(async (url) => {
@@ -1914,10 +1916,18 @@
                          style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.25)'}}>
                       <img src={topMatch.url} className="w-8 h-8 object-contain rounded flex-shrink-0"
                            onError={e=>e.target.style.display='none'} />
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white">{topMatch.name}</p>
                         {topMatch.tier && <p className="text-xs text-slate-500">Tier {topMatch.tier} · {topMatch.rarity}</p>}
                       </div>
+                      <button onClick={() => {
+                        navigator.clipboard.writeText(topMatch.name);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1500);
+                      }} className="btn px-2.5 py-1 text-xs flex-shrink-0"
+                              style={{background:'var(--s2)',border:'1px solid var(--border)',color: copied ? '#10B981' : 'var(--fg2)'}}>
+                        {copied ? '✓ Copied' : 'Copy'}
+                      </button>
                     </div>
                     <p className="text-xs text-slate-700 mt-1.5">Gallery sorted by similarity — top matches first.</p>
                   </div>
@@ -1931,18 +1941,27 @@
 
             {/* Gallery */}
             <div className="flex-1 overflow-hidden flex flex-col min-h-0 px-4 pb-4 pt-3">
-              <input className="inp text-sm mb-3 flex-shrink-0"
-                     placeholder={`Search ${BALL_IMAGES.length} balls by name…`}
-                     value={query} onChange={e=>setQuery(e.target.value)} autoFocus />
-              <div className="overflow-y-auto flex-1"
-                   style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,90px))',gridAutoRows:'90px',gap:'8px',alignContent:'start',justifyContent:'center'}}>
-                {displayedBalls.map((ball, i) => (
-                  <BallCard key={ball.name} ball={ball} rank={scores && !query ? i+1 : null} />
-                ))}
-                {displayedBalls.length === 0 && (
-                  <div className="col-span-full text-center py-12 text-slate-600 text-sm">No results for "{query}"</div>
-                )}
+              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                <input className="inp text-sm flex-1"
+                       placeholder={`Search ${BALL_IMAGES.length} balls by name…`}
+                       value={query} onChange={e=>setQuery(e.target.value)} autoFocus />
+                <button onClick={()=>setShowGallery(v=>!v)}
+                        className="btn px-3 py-1.5 text-xs flex-shrink-0"
+                        style={{background:'var(--s2)',border:'1px solid var(--border)',color:'var(--fg2)'}}>
+                  {showGallery ? '▲ Hide' : '▼ Show'}
+                </button>
               </div>
+              {showGallery && (
+                <div className="overflow-y-auto flex-1"
+                     style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,90px))',gridAutoRows:'90px',gap:'8px',alignContent:'start',justifyContent:'center'}}>
+                  {displayedBalls.map((ball, i) => (
+                    <BallCard key={ball.name} ball={ball} rank={scores && !query ? i+1 : null} />
+                  ))}
+                  {displayedBalls.length === 0 && (
+                    <div className="col-span-full text-center py-12 text-slate-600 text-sm">No results for "{query}"</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
