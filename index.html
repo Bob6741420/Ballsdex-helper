@@ -6,10 +6,10 @@
   <meta name="referrer" content="no-referrer" />
   <title>BallsDex Spawn Commander V2</title>
 
-  <!-- Fonts: Plus Jakarta Sans (UI) + JetBrains Mono (clock/code) -->
+  <!-- Fonts: Space Grotesk (UI) + Space Mono (clock/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -27,8 +27,8 @@
             }
           },
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+            mono: ['"Space Mono"', 'monospace'],
           }
         }
       }
@@ -43,20 +43,26 @@
   <style>
     /* ── Design tokens ──────────────────────────────────────────── */
     :root {
-      --bg:          #07080A;
-      --s0:          rgba(255,255,255,0.02);
-      --s1:          rgba(255,255,255,0.04);
-      --s2:          rgba(255,255,255,0.07);
-      --border:      rgba(255,255,255,0.07);
-      --border-hi:   rgba(255,255,255,0.13);
+      --bg:          #04040A;
+      --s0:          rgba(255,255,255,0.03);
+      --s1:          rgba(255,255,255,0.055);
+      --s2:          rgba(255,255,255,0.09);
+      --border:      rgba(255,255,255,0.09);
+      --border-hi:   rgba(255,255,255,0.16);
+      --violet:      #8B5CF6;
+      --violet-dim:  rgba(139,92,246,0.18);
       --indigo:      #6366F1;
       --indigo-dim:  rgba(99,102,241,0.15);
+      --cyan:        #22D3EE;
+      --cyan-dim:    rgba(34,211,238,0.12);
       --emerald:     #10B981;
       --emerald-dim: rgba(16,185,129,0.15);
       --amber:       #F59E0B;
       --amber-dim:   rgba(245,158,11,0.15);
       --orange:      #F97316;
+      --rose:        #F43F5E;
       --text:        #F1F5F9;
+      --fg2:         #CBD5E1;
       --sec:         #94A3B8;
       --muted:       #475569;
     }
@@ -66,9 +72,25 @@
     html, body, #root {
       height: 100%; overflow: hidden;
       background: var(--bg);
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
       color: var(--text);
       -webkit-font-smoothing: antialiased;
+    }
+
+    /* Aurora background orbs */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 45% 55% at 8% 12%,  rgba(139,92,246,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 50% at 90% 82%,  rgba(34,211,238,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 38% at 78% 8%,   rgba(244,63,94,0.09)  0%, transparent 55%),
+        radial-gradient(ellipse 35% 40% at 50% 110%, rgba(99,102,241,0.12) 0%, transparent 60%);
+      animation: auroraFloat 18s ease-in-out infinite alternate;
+    }
+    @keyframes auroraFloat {
+      0%   { transform: scale(1)    translate(0, 0); }
+      100% { transform: scale(1.07) translate(8px, -14px); }
     }
 
     /* Grain overlay */
@@ -85,8 +107,8 @@
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 2px; }
 
     /* Glass surfaces */
-    .glass  { background: var(--s0); border: 1px solid var(--border); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-    .glass2 { background: var(--s1); border: 1px solid var(--border-hi); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .glass  { background: rgba(10,10,20,0.55); border: 1px solid var(--border); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+    .glass2 { background: rgba(12,12,22,0.72); border: 1px solid var(--border-hi); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
 
     /* Inputs & selects */
     .inp {
@@ -122,19 +144,20 @@
 
     /* ── CAUGHT button ──────────────────────────────────────────── */
     .btn-caught {
-      background: linear-gradient(145deg, #059669 0%, #10B981 55%, #34D399 100%);
-      border: 1px solid rgba(52,211,153,0.3) !important;
-      box-shadow: 0 4px 20px rgba(16,185,129,0.3), 0 1px 0 rgba(255,255,255,0.12) inset;
+      background: linear-gradient(135deg, #047857 0%, #059669 25%, #10B981 60%, #34D399 85%, #6EE7B7 100%);
+      border: 1px solid rgba(52,211,153,0.35) !important;
+      box-shadow: 0 4px 24px rgba(16,185,129,0.4), 0 0 48px rgba(16,185,129,0.12), 0 1px 0 rgba(255,255,255,0.15) inset;
       color: white;
+      letter-spacing: 0.03em;
     }
     .btn-caught::after {
-      content: ''; position: absolute; top: 0; left: -110%; width: 60%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
-      animation: shimmer 2.8s ease-in-out infinite;
+      content: ''; position: absolute; top: 0; left: -110%; width: 55%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+      animation: shimmer 2.4s ease-in-out infinite;
     }
     .btn-caught:hover {
-      box-shadow: 0 6px 30px rgba(16,185,129,0.5), 0 1px 0 rgba(255,255,255,0.15) inset;
-      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(16,185,129,0.6), 0 0 60px rgba(16,185,129,0.18), 0 1px 0 rgba(255,255,255,0.18) inset;
+      transform: translateY(-3px);
     }
     .btn-caught:active { transform: scale(0.96) translateY(0) !important; }
 
@@ -223,12 +246,16 @@
     /* Phase ambient glows */
     .phase-prime-bg::before {
       content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(245,158,11,.22), transparent);
-      animation: primePulse 3.5s ease-in-out infinite;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 70%, rgba(245,158,11,.28), transparent),
+        radial-gradient(ellipse 40% 30% at 20% 30%, rgba(249,115,22,.12), transparent);
+      animation: primePulse 3s ease-in-out infinite;
     }
     .phase-trig-bg::before {
       content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(16,185,129,.2), transparent);
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 70%, rgba(16,185,129,.26), transparent),
+        radial-gradient(ellipse 35% 28% at 80% 20%, rgba(34,211,238,.14), transparent);
       animation: trigPulse 2s ease-in-out infinite;
     }
 
@@ -262,14 +289,16 @@
 
     /* Section label accent */
     .section-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--muted);
-      display: flex; align-items: center; gap: 6px;
+      display: flex; align-items: center; gap: 7px;
       margin-bottom: 10px;
     }
     .section-label::before {
-      content: ''; display: block; width: 3px; height: 10px;
-      border-radius: 2px; background: var(--indigo); flex-shrink: 0;
+      content: ''; display: block; width: 18px; height: 2px;
+      border-radius: 1px; flex-shrink: 0;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      box-shadow: 0 0 6px rgba(139,92,246,0.6);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1658,18 +1687,19 @@
       );
     }
 
-    function Bar({ pct, color = '#6366F1', label, sub }) {
+    function Bar({ pct, color = '#6366F1', label, sub, glow }) {
       return (
         <div>
           {(label || sub) && (
             <div className="flex justify-between mb-1.5">
-              {label && <span className="text-xs font-medium uppercase tracking-wider text-slate-500">{label}</span>}
-              {sub   && <span className="text-xs font-mono text-slate-600">{sub}</span>}
+              {label && <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</span>}
+              {sub   && <span className="text-xs font-mono text-slate-500">{sub}</span>}
             </div>
           )}
-          <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
+          <div className="h-2 rounded-full overflow-visible" style={{background:'rgba(255,255,255,0.06)',borderRadius:'99px',overflow:'hidden'}}>
             <div className="h-full rounded-full transition-all duration-1000 bar-fill"
-                 style={{ width: `${Math.max(0, Math.min(100, pct))}%`, background: color }} />
+                 style={{ width:`${Math.max(0,Math.min(100,pct))}%`, background:color,
+                          boxShadow: glow ? `0 0 12px ${glow}, 0 0 24px ${glow}55` : undefined }} />
           </div>
         </div>
       );
@@ -2309,14 +2339,14 @@
           )}
 
           {/* ── HEADER ──────────────────────────────────────────── */}
-          <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 border-b"
-                  style={{background:'rgba(0,0,0,.35)',borderColor:'var(--border)',backdropFilter:'blur(24px)',zIndex:10}}>
+          <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5"
+                  style={{background:'rgba(4,4,10,0.7)',borderBottom:'1px solid rgba(139,92,246,0.18)',backdropFilter:'blur(28px)',zIndex:10,boxShadow:'0 1px 0 rgba(139,92,246,0.08)'}}>
             <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white"
-                   style={{background:'var(--indigo)'}}>⚡</div>
-              <span className="text-sm font-semibold text-white">BallsDex</span>
-              <span className="text-sm font-semibold text-slate-600">Spawn Commander</span>
-              {serverName && <span className="text-xs text-slate-700 hidden sm:inline">· {serverName}</span>}
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
+                   style={{background:'linear-gradient(135deg,#7C3AED,#6366F1)',boxShadow:'0 0 14px rgba(124,58,237,0.5)'}}>⚡</div>
+              <span className="text-sm font-bold" style={{background:'linear-gradient(90deg,#A78BFA,#22D3EE)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>BallsDex</span>
+              <span className="text-sm font-medium" style={{color:'rgba(255,255,255,0.25)'}}>Spawn Commander</span>
+              {serverName && <span className="text-xs hidden sm:inline" style={{color:'rgba(255,255,255,0.2)'}}>· {serverName}</span>}
             </div>
             <div className="flex items-center gap-1.5">
               <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.badge}`}>
@@ -2342,7 +2372,7 @@
 
             {/* LEFT PANEL */}
             <aside className="w-64 xl:w-72 flex-shrink-0 flex flex-col overflow-y-auto border-r gap-3 p-3"
-                   style={{borderColor:'var(--border)',background:'rgba(0,0,0,.22)'}}>
+                   style={{borderColor:'rgba(139,92,246,0.12)',background:'rgba(6,5,18,0.55)'}}>
 
               {/* Server Info */}
               <section className="glass rounded-xl p-3.5 card-lift">
@@ -2422,20 +2452,33 @@
             <main className="flex-1 overflow-y-auto p-4 space-y-3">
 
               {/* Phase + Clock card */}
-              <section className={`glass rounded-2xl p-6 text-center ${phase==='TRIGGERING'?'trig-ring':''}`} style={{position:'relative'}}>
+              <section className={`glass rounded-2xl p-6 text-center ${phase==='TRIGGERING'?'trig-ring':''}`}
+                       style={{position:'relative',
+                               boxShadow: phase==='TRIGGERING' ? '0 0 0 1px rgba(16,185,129,0.3), 0 8px 40px rgba(16,185,129,0.1)'
+                                        : phase==='PRIMING'    ? '0 0 0 1px rgba(245,158,11,0.25), 0 8px 40px rgba(245,158,11,0.08)'
+                                        : '0 0 0 1px rgba(139,92,246,0.15), 0 8px 40px rgba(0,0,0,0.3)'}}>
                 <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border mb-4 ${cfg.badge}`}>
                   <span className={`phase-dot ${phase !== 'RESTING' ? 'pulsing' : ''}`} style={{background: cfg.color}} />
                   <span className="uppercase tracking-widest">{cfg.label}</span>
                 </div>
-                <div className="font-mono font-bold text-white leading-none mb-2"
-                     style={{fontSize:'clamp(2.8rem,7vw,4.5rem)',letterSpacing:'0.09em'}}>
+                <div className="font-mono font-bold leading-none mb-2"
+                     style={{
+                       fontSize:'clamp(3.2rem,8vw,5.5rem)',
+                       letterSpacing:'0.1em',
+                       color: phase==='TRIGGERING' ? '#34D399' : phase==='PRIMING' ? '#FCD34D' : '#E2E8F0',
+                       textShadow: phase==='TRIGGERING'
+                         ? '0 0 30px rgba(52,211,153,0.7), 0 0 70px rgba(16,185,129,0.35)'
+                         : phase==='PRIMING'
+                         ? '0 0 30px rgba(252,211,77,0.6), 0 0 70px rgba(245,158,11,0.3)'
+                         : '0 0 40px rgba(139,92,246,0.25)',
+                     }}>
                   {fmt(elapsed)}
                 </div>
-                <p className="text-xs uppercase tracking-widest text-slate-700 mb-5">Time Since Last Catch</p>
+                <p className="text-xs uppercase tracking-widest mb-5" style={{color:'var(--muted)',letterSpacing:'0.15em'}}>Time Since Last Catch</p>
 
-                {phase === 'RESTING'    && <Bar pct={coolPct}  color="#64748B" label="Cooling down"  sub={`Priming in ${fmtDown(restDown)}`} />}
-                {phase === 'PRIMING'    && <Bar pct={primePct} color="#F59E0B" label="Priming phase" sub={`Trigger in ${fmtDown(primDown)}`} />}
-                {phase === 'TRIGGERING' && <Bar pct={sentPct}  color="#10B981" label="Next sentence" sub={`${tick}s`} />}
+                {phase === 'RESTING'    && <Bar pct={coolPct}  color="linear-gradient(90deg,#6366F1,#8B5CF6)" glow="rgba(139,92,246,0.7)"  label="Cooling down"  sub={`Priming in ${fmtDown(restDown)}`} />}
+                {phase === 'PRIMING'    && <Bar pct={primePct} color="linear-gradient(90deg,#F59E0B,#F97316)" glow="rgba(245,158,11,0.8)"  label="Priming phase" sub={`Trigger in ${fmtDown(primDown)}`} />}
+                {phase === 'TRIGGERING' && <Bar pct={sentPct}  color="linear-gradient(90deg,#10B981,#34D399)" glow="rgba(16,185,129,0.8)"  label="Next sentence" sub={`${tick}s`} />}
               </section>
 
               {/* Resting hint */}
