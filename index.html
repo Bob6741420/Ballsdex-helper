@@ -1708,143 +1708,6 @@
     /* ═══════════════════════════════════════════════════════════════
        MODALS
     ═══════════════════════════════════════════════════════════════ */
-    const RARITY_ORDER  = ['Mythical','Legendary','Epic','Rare','Uncommon','Common'];
-    const RARITY_COLORS = {Mythical:'#a855f7',Legendary:'#f59e0b',Epic:'#6366f1',Rare:'#3b82f6',Uncommon:'#10b981',Common:'#64748b'};
-
-    // ── Calibrated spawn probability ─────────────────────────────────
-    // Log-linear interpolation anchored to community-tracked spawn rates:
-    //   Tier  1 → ≈ 0.03%   Tier  5 → ≈ 0.08%
-    //   Tier 15 → ≈ 0.30%   Tier 50 → ≈ 1.50%
-    // Beyond T50 the same log slope is extrapolated, then all values
-    // are normalised so the full pool sums to exactly 100%.
-    const _PA = [[1,0.03],[5,0.08],[15,0.30],[50,1.50]];
-    function _rawW(t) {
-      if (t <= _PA[0][0]) return _PA[0][1];
-      for (let i = 1; i < _PA.length; i++) {
-        const [x0,y0] = _PA[i-1], [x1,y1] = _PA[i];
-        if (t <= x1) {
-          const p = (t-x0)/(x1-x0);
-          return Math.exp((1-p)*Math.log(y0) + p*Math.log(y1));
-        }
-      }
-      const [x0,y0] = _PA[_PA.length-2], [x1,y1] = _PA[_PA.length-1];
-      return Math.exp(Math.log(y1) + (Math.log(y1)-Math.log(y0))/(x1-x0)*(t-x1));
-    }
-    const _rawSum = BALLS.reduce((s,b) => s + _rawW(b.tier), 0);
-    const BALL_PROB = {};
-    BALLS.forEach(b => { BALL_PROB[b.name] = _rawW(b.tier) / _rawSum; });
-    const MAX_BALL_PROB = Math.max(...Object.values(BALL_PROB));
-
-    function ProbabilityModal({ onClose }) {
-      const [q, setQ] = useState('');
-      const [sortBy, setSortBy] = useState('prob');
-
-      const rarityGroups = useMemo(() => {
-        const g = {};
-        BALLS.forEach(b => {
-          if (!g[b.rarity]) g[b.rarity] = { prob: 0, count: 0 };
-          g[b.rarity].prob  += BALL_PROB[b.name];
-          g[b.rarity].count++;
-        });
-        return g;
-      }, []);
-
-      const displayed = useMemo(() => {
-        let list = BALLS;
-        if (q.trim()) {
-          const lq = q.toLowerCase();
-          list = list.filter(b => b.name.toLowerCase().includes(lq) || b.rarity.toLowerCase().includes(lq));
-        }
-        if (sortBy === 'prob') return [...list].sort((a, b) => (BALL_PROB[b.name]??0) - (BALL_PROB[a.name]??0));
-        if (sortBy === 'name') return [...list].sort((a, b) => a.name.localeCompare(b.name));
-        return [...list].sort((a, b) => a.tier - b.tier);
-      }, [q, sortBy, rarityGroups]);
-
-      const fmtPct = p => p < 0.0001 ? (p*100).toExponential(2)+'%' : p < 0.001 ? (p*100).toFixed(4)+'%' : (p*100).toFixed(3)+'%';
-      const oneIn  = p => { const n = Math.round(1/p); return n >= 10000 ? Math.round(n/1000)+'k' : n.toLocaleString(); };
-
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-             style={{background:'rgba(0,0,0,.88)',backdropFilter:'blur(12px)'}}
-             onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="glass2 rounded-2xl flex flex-col anim-slide-up"
-               style={{width:'min(820px,95vw)',maxHeight:'90vh'}}>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
-              <div>
-                <h2 className="font-semibold text-white text-sm">🎲 Spawn Probabilities</h2>
-                <p className="text-xs mt-0.5 text-slate-600">Calibrated to community data: T1≈0.03%, T5≈0.08%, T15≈0.30%, T50≈1.50% · normalised to 100%</p>
-              </div>
-              <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm"
-                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
-            </div>
-
-            {/* Rarity summary */}
-            <div className="px-4 pt-4 pb-3 border-b flex-shrink-0" style={{borderColor:'var(--border)'}}>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {RARITY_ORDER.map(r => {
-                  const g = rarityGroups[r];
-                  if (!g) return null;
-                  const totalPct = (g.prob * 100).toFixed(1);
-                  const perBall  = g.prob / g.count;
-                  return (
-                    <div key={r} className="rounded-xl p-2.5 text-center"
-                         style={{background:'var(--s1)',border:`1px solid ${RARITY_COLORS[r]}33`}}>
-                      <p className="text-xs font-semibold mb-0.5" style={{color:RARITY_COLORS[r]}}>{r}</p>
-                      <p className="text-base font-bold text-white leading-none">{totalPct}%</p>
-                      <p className="text-xs text-slate-600 mt-0.5">{g.count} balls</p>
-                      <p className="text-xs text-slate-700 mt-0.5">{fmtPct(perBall)} ea</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Controls */}
-            <div className="px-4 py-3 flex gap-2 flex-shrink-0">
-              <input className="inp text-sm flex-1" placeholder="Search by name or rarity…"
-                     value={q} onChange={e=>setQ(e.target.value)} autoFocus />
-              <div className="flex gap-1">
-                {[['prob','% ↓'],['tier','Tier ↑'],['name','A–Z']].map(([v,lbl]) => (
-                  <button key={v} onClick={()=>setSortBy(v)}
-                          className="btn px-2.5 py-1 text-xs"
-                          style={{background:sortBy===v?'var(--indigo-dim)':'var(--s2)',
-                                  border:`1px solid ${sortBy===v?'rgba(99,102,241,.4)':'var(--border)'}`,
-                                  color:sortBy===v?'#818cf8':'var(--fg2)'}}>
-                    {lbl}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Ball list */}
-            <div className="overflow-y-auto flex-1 px-3 pb-4 space-y-px">
-              {displayed.map(b => {
-                const prob = BALL_PROB[b.name] ?? 0;
-                const barW = (prob / MAX_BALL_PROB) * 100;
-                return (
-                  <div key={b.name+b.tier} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 transition-colors">
-                    <span className="font-mono text-xs w-9 text-right text-slate-600 flex-shrink-0">T{b.tier}</span>
-                    <span className="text-sm text-white font-medium flex-shrink-0 truncate" style={{width:'9rem'}}>{b.name}</span>
-                    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 text-center ${rarityStyle(b.rarity)}`}
-                          style={{width:'5.5rem'}}>{b.rarity}</span>
-                    <div className="flex-1 h-1.5 rounded-full flex-shrink-0" style={{background:'var(--s2)',minWidth:'2rem'}}>
-                      <div className="h-full rounded-full"
-                           style={{width:barW+'%',background:RARITY_COLORS[b.rarity],minWidth:'2px'}} />
-                    </div>
-                    <span className="font-mono text-xs text-slate-400 flex-shrink-0 text-right" style={{width:'5.5rem'}}>{fmtPct(prob)}</span>
-                    <span className="text-xs text-slate-700 flex-shrink-0 text-right" style={{width:'4rem'}}>1:{oneIn(prob)}</span>
-                  </div>
-                );
-              })}
-              {displayed.length === 0 && <div className="text-center py-12 text-slate-600 text-sm">No results for "{q}"</div>}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     function BallModal({ onClose }) {
       const [q, setQ] = useState('');
       const list = useMemo(() => {
@@ -2162,7 +2025,6 @@
       const [showBalls,      setShowBalls]      = useState(false);
       const [showSync,       setShowSync]       = useState(false);
       const [showIdentifier, setShowIdentifier] = useState(false);
-      const [showProbs,      setShowProbs]      = useState(false);
       const [toast,          setToast]          = useState(null); // {msg, type, key}
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
@@ -2379,8 +2241,6 @@
                       style={{background:'var(--s2)',border:'1px solid var(--border)'}}>📖</button>
               <button onClick={()=>setShowIdentifier(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
                       style={{background:'var(--s2)',border:'1px solid var(--border)'}}>🔍</button>
-              <button onClick={()=>setShowProbs(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
-                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>🎲</button>
               <button onClick={()=>setStandby(!standby)}
                       className={`btn px-3 py-1.5 text-xs font-semibold ${standby?'text-indigo-400':'text-slate-500 hover:text-white'}`}
                       style={{background:standby?'var(--indigo-dim)':'var(--s2)',border:`1px solid ${standby?'rgba(99,102,241,.3)':'var(--border)'}`}}>
@@ -2576,7 +2436,6 @@
           {showBalls      && <BallModal          onClose={()=>setShowBalls(false)} />}
           {showSync       && <SyncModal          onClose={()=>setShowSync(false)} onSync={sync} />}
           {showIdentifier && <IdentifierModal    onClose={()=>setShowIdentifier(false)} />}
-          {showProbs      && <ProbabilityModal   onClose={()=>setShowProbs(false)} />}
         </div>
       );
     }
