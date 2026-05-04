@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 Official ball names (exact, case-sensitive):
 ${ballNames.join('\n')}
 
-User input (their list of countries/balls they own — may contain abbreviations, typos, alternate names, one per line or comma-separated):
+User input (may be space-separated, comma-separated, or any format — extract all country/entity names you can find):
 ${input}
 
 Task: Match each item the user listed to the correct official ball name. Be flexible:

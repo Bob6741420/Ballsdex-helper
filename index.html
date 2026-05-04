@@ -2094,10 +2094,10 @@
               </button>
               {showImport && (
                 <div className="px-3 pb-3 pt-2 space-y-2" style={{background:'var(--s0)'}}>
-                  <p className="text-xs text-slate-600 leading-relaxed">Type or paste country/ball names separated by commas. AI will match them to your collection.</p>
+                  <p className="text-xs text-slate-600 leading-relaxed">Paste any text with country or ball names — AI will find and match them.</p>
                   <input
                     className="inp text-xs w-full"
-                    placeholder="Germany, France, USA, UK, Poland…"
+                    placeholder="Germany France USA UK Poland…"
                     value={importText}
                     onChange={e=>{ setImportText(e.target.value); setPreview(null); setImportErr(''); }}
                     onKeyDown={e=>{ if(e.key==='Enter') runMatch(); }}
