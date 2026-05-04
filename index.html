@@ -2047,58 +2047,55 @@
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
-      // strip flag emojis (regional indicators), parse :emoji1: → emoji, lowercase
+      // strip flag emojis, parse :emoji1: → emoji, lowercase
       const parsed = inputText
-        .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')   // 🇫🇷 🇩🇪 etc
+        .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')
         .replace(/:([a-z_]+)\d*:/gi, (_, n) => n.replace(/_/g, '') + ' ')
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ');
 
-      // strip trailing digits from each token (France1 → france, germany3 → germany)
-      const raw = parsed.split(/\s+/)
-        .map(t => t.replace(/\d+$/, ''))
-        .filter(t => t.length > 1);
+      const raw = [...new Set(
+        parsed.split(/\s+/).map(t => t.replace(/\d+$/, '')).filter(t => t.length > 1)
+      )];
 
       const matched = new Set();
+      const unmatched = [];
 
-      // Pass 1: slug match (handles :france1: → france → France, France1 → france → France)
-      for (const tok of raw) {
-        const slug = ABBREV[tok] || slugify(tok);
-        if (slugIndex[slug]) matched.add(slugIndex[slug]);
-      }
-
-      // Pass 2: word-level match (tok appears as a whole word in ball name)
-      for (const tok of raw) {
-        if (tok.length < 4) continue;
-        for (const name of balls) {
-          if (matched.has(name)) continue;
-          if (name.toLowerCase().split(/\s+/).includes(tok)) { matched.add(name); break; }
-        }
-      }
-
-      // Pass 2.5: containment — input slug contains ball slug (e.g. secondfrenchempire ⊃ frenchempire)
       for (const tok of raw) {
         const sl = ABBREV[tok] || slugify(tok);
-        if (sl.length < 8) continue;
-        for (const name of balls) {
-          if (matched.has(name)) continue;
-          const bs = slugify(name);
-          if (bs.length >= 7 && sl.includes(bs)) { matched.add(name); break; }
+        let found = false;
+
+        // exact slug
+        if (slugIndex[sl]) { matched.add(slugIndex[sl]); found = true; }
+
+        // word-level
+        if (!found && sl.length >= 4) {
+          for (const name of balls) {
+            if (name.toLowerCase().split(/\s+/).includes(sl)) { matched.add(name); found = true; break; }
+          }
         }
+
+        // containment: input slug wraps ball slug (secondfrenchempire ⊃ frenchempire)
+        if (!found && sl.length >= 8) {
+          for (const name of balls) {
+            const bs = slugify(name);
+            if (bs.length >= 7 && sl.includes(bs)) { matched.add(name); found = true; break; }
+          }
+        }
+
+        // fuzzy (single-word balls only)
+        if (!found && sl.length >= 4) {
+          for (const name of balls) {
+            if (name.includes(' ')) continue;
+            const dist = levenshtein(sl, slugify(name));
+            if (dist <= Math.max(1, Math.floor(sl.length / 5))) { matched.add(name); found = true; break; }
+          }
+        }
+
+        if (!found) unmatched.push(tok);
       }
 
-      // Pass 3: fuzzy for single-word balls only (typos)
-      for (const tok of raw) {
-        if (tok.length < 4) continue;
-        const sl = ABBREV[tok] || slugify(tok);
-        for (const name of balls) {
-          if (matched.has(name) || name.includes(' ')) continue;
-          const dist = levenshtein(sl, slugify(name));
-          if (dist <= Math.max(1, Math.floor(sl.length / 5))) { matched.add(name); break; }
-        }
-      }
-
-      return [...matched];
+      return { matched: [...matched], unmatched };
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -2131,8 +2128,8 @@
         if (!importText.trim()) return;
         setImporting(true); setImportErr(''); setPreview(null);
         try {
-          const matched = matchBalls(importText, BALLS.map(b => b.name));
-          setPreview(matched);
+          const result = matchBalls(importText, BALLS.map(b => b.name));
+          setPreview(result);
         } catch(e) {
           setImportErr(e.message);
         }
@@ -2142,7 +2139,7 @@
       const applyPreview = () => {
         setCollection(prev => {
           const next = {...prev};
-          preview.forEach(name => { next[name] = true; });
+          preview.matched.forEach(name => { next[name] = true; });
           return next;
         });
         setPreview(null); setImportText(''); setShowImport(false);
@@ -2181,33 +2178,49 @@
                     </button>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs text-slate-500">
-                        {preview.length === 0
-                          ? 'No matches found. Try rephrasing your list.'
-                          : `Matched ${preview.length} ball${preview.length!==1?'s':''}:`}
-                      </p>
-                      {preview.length > 0 && (
-                        <>
-                          <div className="rounded-lg overflow-y-auto space-y-px" style={{maxHeight:'120px'}}>
-                            {preview.map(name => (
-                              <div key={name} className="flex items-center gap-2 px-2 py-1">
-                                <span className="text-emerald-400 text-xs">✓</span>
-                                <span className="text-xs text-white">{name}</span>
+                      {preview.matched.length === 0 && preview.unmatched.length === 0
+                        ? <p className="text-xs text-slate-500">No input found.</p>
+                        : <>
+                          {preview.matched.length > 0 && (
+                            <>
+                              <p className="text-xs text-slate-500">Matched {preview.matched.length} ball{preview.matched.length!==1?'s':''}:</p>
+                              <div className="rounded-lg overflow-y-auto space-y-px" style={{maxHeight:'110px'}}>
+                                {preview.matched.map(name => (
+                                  <div key={name} className="flex items-center gap-2 px-2 py-1">
+                                    <span className="text-emerald-400 text-xs">✓</span>
+                                    <span className="text-xs text-white">{name}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </>
+                          )}
+                          {preview.unmatched.length > 0 && (
+                            <>
+                              <p className="text-xs text-rose-400">Not recognized ({preview.unmatched.length}):</p>
+                              <div className="rounded-lg overflow-y-auto space-y-px" style={{maxHeight:'80px'}}>
+                                {preview.unmatched.map(tok => (
+                                  <div key={tok} className="flex items-center gap-2 px-2 py-1">
+                                    <span className="text-rose-400 text-xs">✗</span>
+                                    <span className="text-xs text-slate-400 font-mono">{tok}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                           <div className="flex gap-2">
                             <button onClick={()=>setPreview(null)} className="btn flex-1 py-1.5 text-xs text-slate-500"
                                     style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
                               ← Redo
                             </button>
-                            <button onClick={applyPreview} className="btn flex-1 py-1.5 text-xs font-semibold text-emerald-400"
-                                    style={{background:'var(--emerald-dim)',border:'1px solid rgba(16,185,129,.4)'}}>
-                              ✓ Mark all as owned
-                            </button>
+                            {preview.matched.length > 0 && (
+                              <button onClick={applyPreview} className="btn flex-1 py-1.5 text-xs font-semibold text-emerald-400"
+                                      style={{background:'var(--emerald-dim)',border:'1px solid rgba(16,185,129,.4)'}}>
+                                ✓ Mark all as owned
+                              </button>
+                            )}
                           </div>
                         </>
-                      )}
+                      }
                     </div>
                   )}
                 </div>
