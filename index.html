@@ -2296,8 +2296,7 @@
         if (el0 >= TRIGGERING_START) initPh = 'TRIGGERING';
         else if (el0 >= PRIMING_START) initPh = 'PRIMING';
         prevPhR.current  = initPh;
-        // Don't fire a sentence immediately on restore — wait the full interval
-        lastSentR.current = (initPh === 'RESTING') ? 0 : Date.now();
+        lastSentR.current = 0; // fire sentence immediately on restore if in active phase
         cmdIdxR.current  = 0;
         cmdTickR.current = randCmdInterval();
 
