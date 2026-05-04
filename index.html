@@ -2043,7 +2043,7 @@
     }
 
     function matchBalls(inputText, balls) {
-      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic' };
+      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic', stlucia:'saintlucia', saintlucia:'saintlucia', stkitts:'saintkittsandnevis', stvincent:'saintvincentandthegrenadines', stmartin:'sintmaarten' };
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
@@ -2080,6 +2080,14 @@
           for (const name of balls) {
             const bs = slugify(name);
             if (bs.length >= 7 && sl.includes(bs)) { matched.add(name); found = true; break; }
+          }
+        }
+
+        // reverse containment: ball slug wraps input slug (saotomeandprincipe ⊃ saotome)
+        if (!found && sl.length >= 7) {
+          for (const name of balls) {
+            const bs = slugify(name);
+            if (bs.includes(sl)) { matched.add(name); found = true; break; }
           }
         }
 
