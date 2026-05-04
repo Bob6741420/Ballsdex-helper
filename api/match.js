@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 Official ball names (exact, case-sensitive):
 ${ballNames.join('\n')}
 
-User input (may be space-separated, comma-separated, or any format — extract all country/entity names you can find):
+User input (may be Discord emoji format like :gabon1: :france1:, or plain text in any format — strip colons and numbers, extract all country/entity names you can find):
 ${input}
 
 Task: Match each item the user listed to the correct official ball name. Be flexible:
@@ -45,7 +45,7 @@ If nothing matches, return [].`;
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(502).json({ error: 'Claude API error', detail: err });
+      return res.status(502).json({ error: `Claude API error ${response.status}: ${err}` });
     }
 
     const data = await response.json();
