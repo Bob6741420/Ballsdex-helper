@@ -2062,8 +2062,9 @@
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ input: importText, ballNames: BALLS.map(b => b.name) }),
           });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Server error');
+          let data;
+          try { data = await res.json(); } catch { data = {}; }
+          if (!res.ok) throw new Error(`[${res.status}] ${data.error || 'Server error'}`);
           setPreview(data.matched || []);
         } catch(e) {
           setImportErr(e.message);

@@ -51,7 +51,9 @@ If nothing matches, return [].`;
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(502).json({ error: `Claude API error ${response.status}: ${err}` });
+      let detail = err;
+      try { const j = JSON.parse(err); detail = j.error?.message || err; } catch {}
+      return res.status(502).json({ error: `Anthropic ${response.status}: ${detail}` });
     }
 
     const data = await response.json();
