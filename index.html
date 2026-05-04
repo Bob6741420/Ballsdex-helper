@@ -2272,6 +2272,7 @@
       const [serverName,  setServerName]  = useState(() => saved.serverName  || '');
       const [memberCount, setMemberCount] = useState(() => saved.memberCount || 'medium');
       const [sentSize,    setSentSize]    = useState(() => saved.sentSize     || 'medium');
+      const [sentInterval,setSentInterval]= useState(() => saved.sentInterval || 60);
       const [sound,       setSound]       = useState(() => saved.sound !== false);
       const [notifs,      setNotifs]      = useState(false);
 
@@ -2302,14 +2303,16 @@
       const soundR   = useRef(sound);
       const notifR   = useRef(notifs);
       const standbyR = useRef(standby);
-      const sizeR    = useRef(sentSize);
+      const sizeR        = useRef(sentSize);
+      const sentIntervalR = useRef(sentInterval);
       const lastIdentifiedNameR = useRef('');
       const autoCopyR           = useRef(autoCopy);
 
       useEffect(() => { soundR.current   = sound;    }, [sound]);
       useEffect(() => { notifR.current   = notifs;   }, [notifs]);
       useEffect(() => { standbyR.current = standby;  }, [standby]);
-      useEffect(() => { sizeR.current    = sentSize; }, [sentSize]);
+      useEffect(() => { sizeR.current         = sentSize;     }, [sentSize]);
+      useEffect(() => { sentIntervalR.current = sentInterval; }, [sentInterval]);
       useEffect(() => { autoCopyR.current  = autoCopy;  }, [autoCopy]);
 
       // ── Service Worker registration ──────────────────────────────
@@ -2356,7 +2359,7 @@
 
       // ── Persist ─────────────────────────────────────────────────
       useEffect(() => {
-        try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sound })); } catch(_) {}
+        try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sentInterval, sound })); } catch(_) {}
       }, [lastCatch, serverName, memberCount, sentSize, sound]);
       useEffect(() => {
         try { localStorage.setItem(LS_COLLECTION, JSON.stringify(collection)); } catch(_) {}
@@ -2402,11 +2405,12 @@
             prevPhR.current = ph;
           }
 
-          // Sentence refresh (every 60s in PRIMING + TRIGGERING) — wall-clock based to survive throttling
+          // Sentence refresh in PRIMING + TRIGGERING — wall-clock based to survive throttling
           if (ph === 'PRIMING' || ph === 'TRIGGERING') {
             const now = Date.now();
+            const interval = sentIntervalR.current;
             const age = lastSentR.current === 0 ? 999999 : (now - lastSentR.current) / 1000;
-            if (age >= 60) {
+            if (age >= interval) {
               const s = generateSentence(sizeR.current);
               setSentence(s);
               if (autoCopyR.current) navigator.clipboard.writeText(s).catch(()=>{});
@@ -2416,9 +2420,9 @@
                 setToast({ msg: (ph === 'TRIGGERING' ? '🟢 ' : '🟡 ') + s, type: ph === 'TRIGGERING' ? 'trig' : 'prime', key: Date.now() });
               }
               lastSentR.current = now;
-              setTick(60);
+              setTick(interval);
             } else {
-              setTick(Math.ceil(60 - age));
+              setTick(Math.ceil(interval - age));
             }
           }
 
@@ -2445,7 +2449,7 @@
       // ── Handlers ────────────────────────────────────────────────
       const reset = useCallback((ts = Date.now()) => {
         setLastCatch(ts); setSentence(''); setCommand('');
-        setTick(60); lastSentR.current = 0; cmdIdxR.current = 0; cmdTickR.current = randCmdInterval();
+        setTick(sentIntervalR.current); lastSentR.current = 0; cmdIdxR.current = 0; cmdTickR.current = randCmdInterval();
       }, []);
 
       const caught = useCallback(() => { playSound('caught', soundR.current); reset(); }, [reset]);
@@ -2569,6 +2573,11 @@
                       <option value="medium">Medium</option>
                       <option value="large">Long</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1">Sentence Interval (s)</label>
+                    <input type="number" min="5" max="300" className="inp text-xs" value={sentInterval}
+                           onChange={e => setSentInterval(Math.max(5, Math.min(300, Number(e.target.value) || 60)))} />
                   </div>
                 </div>
               </section>
