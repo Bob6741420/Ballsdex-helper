@@ -318,7 +318,6 @@
     const PRIMING_START    = 720;
     const TRIGGERING_START = 900;
     const LS_KEY           = 'bdx-v2';
-    const LS_STATS         = 'bdx-stats';
     const LS_COLLECTION    = 'bdx-coll';
     const CMDS             = ['/balls list', '/balls completion', '/balls info'];
     const randCmdInterval  = () => 900 + Math.floor(Math.random() * 900); // 15–30 min in seconds
@@ -2114,16 +2113,10 @@
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
 
-      const [stats,      setStats]      = useState(() => {
-        try { const s = JSON.parse(localStorage.getItem(LS_STATS)||'{}');
-              return { catches:0, misses:0, streak:0, bestStreak:0, history:[], ...s }; }
-        catch(_) { return { catches:0, misses:0, streak:0, bestStreak:0, history:[] }; }
-      });
       const [collection, setCollection] = useState(() => {
         try { return JSON.parse(localStorage.getItem(LS_COLLECTION)||'{}'); }
         catch(_) { return {}; }
       });
-      const [rightTab,   setRightTab]   = useState('stats');
       const [showKeys,   setShowKeys]   = useState(false);
       const [autoCopy,   setAutoCopy]   = useState(() => {
         try { return localStorage.getItem('bdx-autocopy') === 'true'; } catch(_){ return false; }
@@ -2138,7 +2131,6 @@
       const notifR   = useRef(notifs);
       const standbyR = useRef(standby);
       const sizeR    = useRef(sentSize);
-      const lastCatchR          = useRef(lastCatch);
       const lastIdentifiedNameR = useRef('');
       const autoCopyR           = useRef(autoCopy);
 
@@ -2146,7 +2138,6 @@
       useEffect(() => { notifR.current   = notifs;   }, [notifs]);
       useEffect(() => { standbyR.current = standby;  }, [standby]);
       useEffect(() => { sizeR.current    = sentSize; }, [sentSize]);
-      useEffect(() => { lastCatchR.current = lastCatch; }, [lastCatch]);
       useEffect(() => { autoCopyR.current  = autoCopy;  }, [autoCopy]);
 
       // ── Service Worker registration ──────────────────────────────
@@ -2195,9 +2186,6 @@
       useEffect(() => {
         try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sound })); } catch(_) {}
       }, [lastCatch, serverName, memberCount, sentSize, sound]);
-      useEffect(() => {
-        try { localStorage.setItem(LS_STATS, JSON.stringify(stats)); } catch(_) {}
-      }, [stats]);
       useEffect(() => {
         try { localStorage.setItem(LS_COLLECTION, JSON.stringify(collection)); } catch(_) {}
       }, [collection]);
@@ -2251,8 +2239,6 @@
               const s = generateSentence(sizeR.current);
               setSentence(s);
               if (autoCopyR.current) navigator.clipboard.writeText(s).catch(()=>{});
-              const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-              setStats(prev => ({ ...prev, history: [{ type:'sentence', ts:Date.now(), wallTs:ts, elapsed:el, content:s, ph }, ...prev.history].slice(0,200) }));
               if (!standbyR.current) {
                 playSound('sentence', soundR.current);
                 if (notifR.current && ph === 'TRIGGERING') fireNotif('🟢 Send Now!', s);
@@ -2272,8 +2258,6 @@
               const c = CMDS[cmdIdxR.current % CMDS.length];
               cmdIdxR.current++;
               setCommand(c);
-              const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-              setStats(prev => ({ ...prev, history: [{ type:'command', ts:Date.now(), wallTs:ts, elapsed:el, content:c, ph }, ...prev.history].slice(0,200) }));
               if (!standbyR.current) {
                 playSound('sentence', soundR.current);
                 if (notifR.current) fireNotif('🟢 Use Command Now!', c);
@@ -2318,27 +2302,8 @@
         setTick(60); lastSentR.current = 0; cmdIdxR.current = 0; cmdTickR.current = randCmdInterval();
       }, []);
 
-      const caught = useCallback(() => {
-        const el = Math.floor((Date.now() - lastCatchR.current) / 1000);
-        playSound('caught', soundR.current);
-        setStats(prev => {
-          const newStreak = prev.streak + 1;
-          const entry = { type:'caught', ts:Date.now(), elapsed:el };
-          return { ...prev, catches: prev.catches+1, streak: newStreak,
-                   bestStreak: Math.max(prev.bestStreak, newStreak),
-                   history: [entry, ...prev.history].slice(0,200) };
-        });
-        reset();
-      }, [reset]);
-      const miss = useCallback(() => {
-        const el = Math.floor((Date.now() - lastCatchR.current) / 1000);
-        setStats(prev => {
-          const entry = { type:'miss', ts:Date.now(), elapsed:el };
-          return { ...prev, misses: prev.misses+1, streak:0,
-                   history: [entry, ...prev.history].slice(0,200) };
-        });
-        reset();
-      }, [reset]);
+      const caught = useCallback(() => { playSound('caught', soundR.current); reset(); }, [reset]);
+      const miss   = useCallback(() => reset(), [reset]);
       const sync   = useCallback(ts => reset(ts), [reset]);
 
       const toggleNotifs = useCallback(async () => {
@@ -2554,83 +2519,9 @@
                 </section>
               )}
 
-              {/* Right panel tabs */}
+              {/* Collection */}
               <section className="glass rounded-xl flex flex-col flex-1 min-h-0 overflow-hidden">
-                {/* Tab strip */}
-                <div className="flex border-b flex-shrink-0" style={{borderColor:'var(--border)'}}>
-                  {[['stats','Stats'],['history','History'],['collection','Collection']].map(([v,lbl]) => (
-                    <button key={v} onClick={()=>setRightTab(v)}
-                            className="flex-1 py-2.5 text-xs font-semibold transition-colors"
-                            style={{color:rightTab===v?'#A78BFA':'var(--muted)',
-                                    borderBottom:rightTab===v?'2px solid #8B5CF6':'2px solid transparent',
-                                    background:'transparent'}}>
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Stats tab */}
-                {rightTab === 'stats' && (() => {
-                  const catchItems = stats.history.filter(h=>h.type==='caught');
-                  const avgSec = catchItems.length > 1
-                    ? Math.round(catchItems.slice(0,-1).reduce((sum,h,i)=>{
-                        return sum + (h.ts - catchItems[i+1].ts)/1000;
-                      },0) / (catchItems.length-1))
-                    : null;
-                  const avgFmt = avgSec ? (avgSec>=60?`${Math.floor(avgSec/60)}m ${avgSec%60}s`:`${avgSec}s`) : '—';
-                  const total = stats.catches + stats.misses;
-                  const rate  = total > 0 ? ((stats.catches/total)*100).toFixed(1)+'%' : '—';
-                  return (
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        {[['Catches',stats.catches,'text-emerald-400'],['Misses',stats.misses,'text-rose-400'],
-                          ['Catch Rate',rate,'text-amber-400'],['Avg Time',avgFmt,'text-indigo-400'],
-                          ['Streak',stats.streak,'text-violet-400'],['Best Streak',stats.bestStreak,'text-cyan-400'],
-                        ].map(([label,val,color]) => (
-                          <div key={label} className="rounded-xl p-3 text-center" style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
-                            <p className={`text-xl font-bold font-mono ${color}`}>{val}</p>
-                            <p className="text-xs text-slate-600 mt-0.5">{label}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={()=>setStats({ catches:0, misses:0, streak:0, bestStreak:0, history:[] })}
-                              className="btn btn-ghost w-full py-2 text-xs text-slate-700 hover:text-rose-400">
-                        Clear all stats
-                      </button>
-                    </div>
-                  );
-                })()}
-
-                {/* History tab */}
-                {rightTab === 'history' && (
-                  <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                    {stats.history.length === 0 && (
-                      <p className="text-center py-12 text-slate-600 text-sm">No history yet.</p>
-                    )}
-                    {stats.history.map((h,i) => {
-                      const time = new Date(h.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-                      const typeIcon  = h.type==='caught'?'✅':h.type==='miss'?'❌':h.type==='command'?'⚡':'💬';
-                      const typeColor = h.type==='caught'?'text-emerald-500':h.type==='miss'?'text-rose-500':h.type==='command'?'text-indigo-400':'text-slate-400';
-                      return (
-                        <div key={i} className="flex items-start gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
-                             style={{background:'var(--s0)',border:'1px solid var(--border)',opacity:Math.max(0.35,1-i*0.025)}}>
-                          <span className="text-sm flex-shrink-0 mt-0.5">{typeIcon}</span>
-                          <div className="flex-1 min-w-0">
-                            {h.content
-                              ? <p className="text-xs text-slate-400 truncate">{h.content}</p>
-                              : <p className={`text-xs font-semibold ${typeColor}`}>{h.type.charAt(0).toUpperCase()+h.type.slice(1)}</p>}
-                            <p className="text-xs text-slate-700 mt-0.5">at {time}{h.elapsed!=null?` · ${fmt(h.elapsed)} elapsed`:''}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Collection tab */}
-                {rightTab === 'collection' && (
-                  <CollectionTab collection={collection} setCollection={setCollection} />
-                )}
+                <CollectionTab collection={collection} setCollection={setCollection} />
               </section>
 
             </main>
