@@ -1,9 +1,15 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method not allowed');
 
-  const { input, ballNames } = req.body || {};
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+  body = body || {};
+
+  const { input, ballNames } = body;
   if (!input || !Array.isArray(ballNames) || ballNames.length === 0) {
-    return res.status(400).json({ error: 'Missing input or ballNames' });
+    return res.status(422).json({ error: `Bad request — input: ${!!input}, ballNames: ${Array.isArray(ballNames)}` });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
