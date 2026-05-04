@@ -318,6 +318,8 @@
     const PRIMING_START    = 720;
     const TRIGGERING_START = 900;
     const LS_KEY           = 'bdx-v2';
+    const LS_STATS         = 'bdx-stats';
+    const LS_COLLECTION    = 'bdx-coll';
     const CMDS             = ['/balls list', '/balls completion', '/balls info'];
     const randCmdInterval  = () => 900 + Math.floor(Math.random() * 900); // 15–30 min in seconds
 
@@ -1708,12 +1710,17 @@
     /* ═══════════════════════════════════════════════════════════════
        MODALS
     ═══════════════════════════════════════════════════════════════ */
-    function BallModal({ onClose }) {
+    function BallModal({ onClose, collection, onToggleOwned }) {
       const [q, setQ] = useState('');
+      const [filter, setFilter] = useState('all');
+      const ownedCount = useMemo(() => BALLS.filter(b => collection?.[b.name]).length, [collection]);
       const list = useMemo(() => {
         const lq = q.trim().toLowerCase();
-        return lq ? BALLS.filter(b => b.name.toLowerCase().includes(lq) || String(b.tier).includes(lq) || b.rarity.toLowerCase().includes(lq)) : BALLS;
-      }, [q]);
+        let base = lq ? BALLS.filter(b => b.name.toLowerCase().includes(lq) || String(b.tier).includes(lq) || b.rarity.toLowerCase().includes(lq)) : BALLS;
+        if (filter === 'owned')   base = base.filter(b =>  collection?.[b.name]);
+        if (filter === 'missing') base = base.filter(b => !collection?.[b.name]);
+        return base;
+      }, [q, filter, collection]);
 
       return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6"
@@ -1723,21 +1730,42 @@
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
               <div>
                 <h2 className="font-semibold text-white text-sm">Ball Reference</h2>
-                <p className="text-xs mt-0.5 text-slate-600">{list.length} of {BALLS.length} balls</p>
+                <p className="text-xs mt-0.5 text-slate-600">{ownedCount} / {BALLS.length} owned · {list.length} shown</p>
               </div>
               <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
             </div>
-            <div className="px-4 py-3 border-b" style={{borderColor:'var(--border)'}}>
+            <div className="px-4 py-3 border-b space-y-2" style={{borderColor:'var(--border)'}}>
               <input className="inp text-sm" placeholder="Search name, tier, rarity…" value={q} onChange={e=>setQ(e.target.value)} autoFocus />
+              <div className="flex gap-1">
+                {[['all','All'],['owned','Owned'],['missing','Missing']].map(([v,lbl]) => (
+                  <button key={v} onClick={()=>setFilter(v)}
+                          className="btn px-3 py-1 text-xs"
+                          style={{background:filter===v?'var(--indigo-dim)':'var(--s2)',
+                                  border:`1px solid ${filter===v?'rgba(99,102,241,.4)':'var(--border)'}`,
+                                  color:filter===v?'#818cf8':'var(--fg2)'}}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="overflow-y-auto flex-1 p-2">
-              {list.map(b => (
-                <div key={b.name+b.tier} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors">
-                  <span className="font-mono text-xs w-10 text-center px-1.5 py-0.5 rounded text-slate-600" style={{background:'var(--s2)'}}>T{b.tier}</span>
-                  <span className="flex-1 text-sm text-white font-medium">{b.name}</span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border ${rarityStyle(b.rarity)}`}>{b.rarity}</span>
-                </div>
-              ))}
+              {list.map(b => {
+                const owned = !!collection?.[b.name];
+                return (
+                  <div key={b.name+b.tier} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors">
+                    <span className="font-mono text-xs w-10 text-center px-1.5 py-0.5 rounded text-slate-600" style={{background:'var(--s2)'}}>T{b.tier}</span>
+                    <span className="flex-1 text-sm text-white font-medium">{b.name}</span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border ${rarityStyle(b.rarity)}`}>{b.rarity}</span>
+                    <button onClick={()=>onToggleOwned?.(b.name)}
+                            className="btn w-7 h-7 flex items-center justify-center text-sm flex-shrink-0"
+                            style={{background:owned?'var(--emerald-dim)':'var(--s2)',
+                                    border:`1px solid ${owned?'rgba(16,185,129,.4)':'var(--border)'}`}}
+                            title={owned?'Mark missing':'Mark owned'}>
+                      {owned ? '✓' : '·'}
+                    </button>
+                  </div>
+                );
+              })}
               {list.length === 0 && <div className="text-center py-12 text-slate-600 text-sm">No results for "{q}"</div>}
             </div>
             <div className="px-4 py-3 border-t text-center" style={{borderColor:'var(--border)'}}>
@@ -1837,7 +1865,7 @@
       );
     }
 
-    function IdentifierModal({ onClose }) {
+    function IdentifierModal({ onClose, onIdentify }) {
       const [uploadedUrl, setUploadedUrl] = useState(null);
       const [query, setQuery] = useState('');
       const [scores, setScores] = useState(null);
@@ -1863,6 +1891,8 @@
             newScores[name] = histIntersect(h64, ref);
           }
           setScores(newScores);
+          const sorted = Object.entries(newScores).sort((a,b)=>b[1]-a[1]);
+          if (sorted[0]) onIdentify?.(sorted[0][0]);
         } catch(e) { console.error(e); }
         setAnalyzing(false);
       }, []);
@@ -2001,6 +2031,62 @@
     /* ═══════════════════════════════════════════════════════════════
        APP
     ═══════════════════════════════════════════════════════════════ */
+    function CollectionTab({ collection, setCollection }) {
+      const [collFilter, setCollFilter] = useState('all');
+      const [collQ,      setCollQ]      = useState('');
+      const ownedCount = useMemo(() => BALLS.filter(b => collection[b.name]).length, [collection]);
+      const collList = useMemo(() => {
+        let list = BALLS;
+        if (collQ.trim()) { const lq = collQ.toLowerCase(); list = list.filter(b => b.name.toLowerCase().includes(lq)); }
+        if (collFilter === 'owned')   list = list.filter(b =>  collection[b.name]);
+        if (collFilter === 'missing') list = list.filter(b => !collection[b.name]);
+        return list;
+      }, [collFilter, collQ, collection]);
+      const toggleOwned = name => setCollection(prev => {
+        const next = {...prev};
+        if (next[name]) delete next[name]; else next[name] = true;
+        return next;
+      });
+      return (
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="px-3 pt-3 pb-2 flex-shrink-0 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500">{ownedCount} / {BALLS.length} owned</p>
+              <div className="flex gap-1">
+                {[['all','All'],['owned','✓'],['missing','—']].map(([v,lbl]) => (
+                  <button key={v} onClick={()=>setCollFilter(v)}
+                          className="btn px-2 py-0.5 text-xs"
+                          style={{background:collFilter===v?'var(--indigo-dim)':'var(--s2)',
+                                  border:`1px solid ${collFilter===v?'rgba(99,102,241,.4)':'var(--border)'}`,
+                                  color:collFilter===v?'#818cf8':'var(--fg2)'}}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input className="inp text-xs" placeholder="Search balls…" value={collQ} onChange={e=>setCollQ(e.target.value)} />
+          </div>
+          <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-px">
+            {collList.map(b => {
+              const owned = !!collection[b.name];
+              return (
+                <div key={b.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                     onClick={()=>toggleOwned(b.name)}>
+                  <div className="w-5 h-5 rounded flex items-center justify-center text-xs flex-shrink-0"
+                       style={{background:owned?'var(--emerald-dim)':'var(--s2)',border:`1px solid ${owned?'rgba(16,185,129,.4)':'var(--border)'}`}}>
+                    {owned && <span className="text-emerald-400 text-xs">✓</span>}
+                  </div>
+                  <span className="flex-1 text-xs text-white font-medium truncate">{b.name}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded border ${rarityStyle(b.rarity)}`} style={{fontSize:'0.6rem'}}>{b.rarity}</span>
+                </div>
+              );
+            })}
+            {collList.length === 0 && <p className="text-center py-8 text-slate-600 text-xs">No results</p>}
+          </div>
+        </div>
+      );
+    }
+
     function App() {
       // ── Load persisted ──────────────────────────────────────────
       const saved = useMemo(() => { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(_){return{};} }, []);
@@ -2020,7 +2106,6 @@
       const [sentence,    setSentence]    = useState('');
       const [command,     setCommand]     = useState('');
       const [tick,        setTick]        = useState(60);
-      const [feed,        setFeed]        = useState([]);
 
       const [showBalls,      setShowBalls]      = useState(false);
       const [showSync,       setShowSync]       = useState(false);
@@ -2028,6 +2113,21 @@
       const [toast,          setToast]          = useState(null); // {msg, type, key}
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
+
+      const [stats,      setStats]      = useState(() => {
+        try { const s = JSON.parse(localStorage.getItem(LS_STATS)||'{}');
+              return { catches:0, misses:0, streak:0, bestStreak:0, history:[], ...s }; }
+        catch(_) { return { catches:0, misses:0, streak:0, bestStreak:0, history:[] }; }
+      });
+      const [collection, setCollection] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(LS_COLLECTION)||'{}'); }
+        catch(_) { return {}; }
+      });
+      const [rightTab,   setRightTab]   = useState('stats');
+      const [showKeys,   setShowKeys]   = useState(false);
+      const [autoCopy,   setAutoCopy]   = useState(() => {
+        try { return localStorage.getItem('bdx-autocopy') === 'true'; } catch(_){ return false; }
+      });
 
       // ── Refs (no re-render needed, read inside interval) ────────
       const lastSentR = useRef(0); // wall-clock ms of last sentence (0 = fire immediately)
@@ -2038,11 +2138,16 @@
       const notifR   = useRef(notifs);
       const standbyR = useRef(standby);
       const sizeR    = useRef(sentSize);
+      const lastCatchR          = useRef(lastCatch);
+      const lastIdentifiedNameR = useRef('');
+      const autoCopyR           = useRef(autoCopy);
 
       useEffect(() => { soundR.current   = sound;    }, [sound]);
       useEffect(() => { notifR.current   = notifs;   }, [notifs]);
       useEffect(() => { standbyR.current = standby;  }, [standby]);
       useEffect(() => { sizeR.current    = sentSize; }, [sentSize]);
+      useEffect(() => { lastCatchR.current = lastCatch; }, [lastCatch]);
+      useEffect(() => { autoCopyR.current  = autoCopy;  }, [autoCopy]);
 
       // ── Service Worker registration ──────────────────────────────
       useEffect(() => {
@@ -2090,6 +2195,15 @@
       useEffect(() => {
         try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sound })); } catch(_) {}
       }, [lastCatch, serverName, memberCount, sentSize, sound]);
+      useEffect(() => {
+        try { localStorage.setItem(LS_STATS, JSON.stringify(stats)); } catch(_) {}
+      }, [stats]);
+      useEffect(() => {
+        try { localStorage.setItem(LS_COLLECTION, JSON.stringify(collection)); } catch(_) {}
+      }, [collection]);
+      useEffect(() => {
+        try { localStorage.setItem('bdx-autocopy', String(autoCopy)); } catch(_) {}
+      }, [autoCopy]);
 
       // ── Main timer ──────────────────────────────────────────────
       useEffect(() => {
@@ -2136,8 +2250,9 @@
             if (age >= 60) {
               const s = generateSentence(sizeR.current);
               setSentence(s);
+              if (autoCopyR.current) navigator.clipboard.writeText(s).catch(()=>{});
               const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-              setFeed(prev => [{ts, s, c:'', ph}, ...prev].slice(0,8));
+              setStats(prev => ({ ...prev, history: [{ type:'sentence', ts:Date.now(), wallTs:ts, elapsed:el, content:s, ph }, ...prev.history].slice(0,200) }));
               if (!standbyR.current) {
                 playSound('sentence', soundR.current);
                 if (notifR.current && ph === 'TRIGGERING') fireNotif('🟢 Send Now!', s);
@@ -2158,7 +2273,7 @@
               cmdIdxR.current++;
               setCommand(c);
               const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-              setFeed(prev => [{ts, s:'', c, ph}, ...prev].slice(0,8));
+              setStats(prev => ({ ...prev, history: [{ type:'command', ts:Date.now(), wallTs:ts, elapsed:el, content:c, ph }, ...prev.history].slice(0,200) }));
               if (!standbyR.current) {
                 playSound('sentence', soundR.current);
                 if (notifR.current) fireNotif('🟢 Use Command Now!', c);
@@ -2171,14 +2286,59 @@
         return () => clearInterval(id);
       }, [lastCatch]);
 
+      // ── Keyboard shortcuts ───────────────────────────────────────
+      useEffect(() => {
+        const onKey = e => {
+          const tag = document.activeElement?.tagName?.toLowerCase();
+          if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+          switch(e.key.toLowerCase()) {
+            case 'c': e.preventDefault(); caught(); break;
+            case 'm': e.preventDefault(); miss();   break;
+            case ' ': e.preventDefault(); setStandby(v => !v); break;
+            case 'i': e.preventDefault(); setShowIdentifier(true); break;
+            case 'l': e.preventDefault(); setShowBalls(true); break;
+            case 'n':
+              e.preventDefault();
+              if (lastIdentifiedNameR.current) {
+                navigator.clipboard.writeText(lastIdentifiedNameR.current).catch(()=>{});
+                setToast({ msg: `📋 Copied: ${lastIdentifiedNameR.current}`, type:'prime', key:Date.now() });
+              }
+              break;
+            case '?': e.preventDefault(); setShowKeys(v => !v); break;
+            default: break;
+          }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, [caught, miss]);
+
       // ── Handlers ────────────────────────────────────────────────
       const reset = useCallback((ts = Date.now()) => {
         setLastCatch(ts); setSentence(''); setCommand('');
         setTick(60); lastSentR.current = 0; cmdIdxR.current = 0; cmdTickR.current = randCmdInterval();
       }, []);
 
-      const caught = useCallback(() => { playSound('caught', soundR.current); reset(); }, [reset]);
-      const miss   = useCallback(() => reset(), [reset]);
+      const caught = useCallback(() => {
+        const el = Math.floor((Date.now() - lastCatchR.current) / 1000);
+        playSound('caught', soundR.current);
+        setStats(prev => {
+          const newStreak = prev.streak + 1;
+          const entry = { type:'caught', ts:Date.now(), elapsed:el };
+          return { ...prev, catches: prev.catches+1, streak: newStreak,
+                   bestStreak: Math.max(prev.bestStreak, newStreak),
+                   history: [entry, ...prev.history].slice(0,200) };
+        });
+        reset();
+      }, [reset]);
+      const miss = useCallback(() => {
+        const el = Math.floor((Date.now() - lastCatchR.current) / 1000);
+        setStats(prev => {
+          const entry = { type:'miss', ts:Date.now(), elapsed:el };
+          return { ...prev, misses: prev.misses+1, streak:0,
+                   history: [entry, ...prev.history].slice(0,200) };
+        });
+        reset();
+      }, [reset]);
       const sync   = useCallback(ts => reset(ts), [reset]);
 
       const toggleNotifs = useCallback(async () => {
@@ -2253,8 +2413,27 @@
           <div className="flex flex-1 overflow-hidden" style={{position:'relative',zIndex:1}}>
 
             {/* LEFT PANEL */}
-            <aside className="w-64 xl:w-72 flex-shrink-0 flex flex-col overflow-y-auto border-r gap-3 p-3"
+            <aside className="w-80 xl:w-96 flex-shrink-0 flex flex-col overflow-y-auto border-r gap-3 p-3"
                    style={{borderColor:'rgba(139,92,246,0.12)',background:'rgba(6,5,18,0.55)'}}>
+
+              {/* Phase Clock */}
+              <section className={`glass rounded-xl p-4 card-lift text-center ${phase==='TRIGGERING'?'trig-ring':''}`}
+                       style={{boxShadow: phase==='TRIGGERING'?'0 0 0 1px rgba(16,185,129,0.3),0 4px 20px rgba(16,185,129,0.1)':phase==='PRIMING'?'0 0 0 1px rgba(245,158,11,0.25),0 4px 20px rgba(245,158,11,0.08)':'0 0 0 1px rgba(139,92,246,0.15),0 4px 20px rgba(0,0,0,0.3)'}}>
+                <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border mb-2 ${cfg.badge}`}>
+                  <span className={`phase-dot ${phase !== 'RESTING' ? 'pulsing' : ''}`} style={{background:cfg.color}} />
+                  <span className="uppercase tracking-widest text-xs">{cfg.label}</span>
+                </div>
+                <div className="font-mono font-bold leading-none mb-1"
+                     style={{fontSize:'clamp(2.4rem,4vw,3.2rem)',letterSpacing:'0.08em',
+                             color:phase==='TRIGGERING'?'#34D399':phase==='PRIMING'?'#FCD34D':'#E2E8F0',
+                             textShadow:phase==='TRIGGERING'?'0 0 24px rgba(52,211,153,0.7)':phase==='PRIMING'?'0 0 24px rgba(252,211,77,0.6)':'0 0 30px rgba(139,92,246,0.25)'}}>
+                  {fmt(elapsed)}
+                </div>
+                <p className="uppercase tracking-widest mb-3" style={{color:'var(--muted)',letterSpacing:'0.12em',fontSize:'0.6rem'}}>Time Since Last Catch</p>
+                {phase==='RESTING'    && <Bar pct={coolPct}  color="linear-gradient(90deg,#6366F1,#8B5CF6)" glow="rgba(139,92,246,0.7)"  label="Cooling down"  sub={`Priming in ${fmtDown(restDown)}`} />}
+                {phase==='PRIMING'    && <Bar pct={primePct} color="linear-gradient(90deg,#F59E0B,#F97316)" glow="rgba(245,158,11,0.8)"  label="Priming phase" sub={`Trigger in ${fmtDown(primDown)}`} />}
+                {phase==='TRIGGERING' && <Bar pct={sentPct}  color="linear-gradient(90deg,#10B981,#34D399)" glow="rgba(16,185,129,0.8)"  label="Next sentence" sub={`${tick}s`} />}
+              </section>
 
               {/* Server Info */}
               <section className="glass rounded-xl p-3.5 card-lift">
@@ -2331,46 +2510,7 @@
             </aside>
 
             {/* RIGHT PANEL */}
-            <main className="flex-1 overflow-y-auto p-4 space-y-3">
-
-              {/* Phase + Clock card */}
-              <section className={`glass rounded-2xl p-6 text-center ${phase==='TRIGGERING'?'trig-ring':''}`}
-                       style={{position:'relative',
-                               boxShadow: phase==='TRIGGERING' ? '0 0 0 1px rgba(16,185,129,0.3), 0 8px 40px rgba(16,185,129,0.1)'
-                                        : phase==='PRIMING'    ? '0 0 0 1px rgba(245,158,11,0.25), 0 8px 40px rgba(245,158,11,0.08)'
-                                        : '0 0 0 1px rgba(139,92,246,0.15), 0 8px 40px rgba(0,0,0,0.3)'}}>
-                <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border mb-4 ${cfg.badge}`}>
-                  <span className={`phase-dot ${phase !== 'RESTING' ? 'pulsing' : ''}`} style={{background: cfg.color}} />
-                  <span className="uppercase tracking-widest">{cfg.label}</span>
-                </div>
-                <div className="font-mono font-bold leading-none mb-2"
-                     style={{
-                       fontSize:'clamp(3.2rem,8vw,5.5rem)',
-                       letterSpacing:'0.1em',
-                       color: phase==='TRIGGERING' ? '#34D399' : phase==='PRIMING' ? '#FCD34D' : '#E2E8F0',
-                       textShadow: phase==='TRIGGERING'
-                         ? '0 0 30px rgba(52,211,153,0.7), 0 0 70px rgba(16,185,129,0.35)'
-                         : phase==='PRIMING'
-                         ? '0 0 30px rgba(252,211,77,0.6), 0 0 70px rgba(245,158,11,0.3)'
-                         : '0 0 40px rgba(139,92,246,0.25)',
-                     }}>
-                  {fmt(elapsed)}
-                </div>
-                <p className="text-xs uppercase tracking-widest mb-5" style={{color:'var(--muted)',letterSpacing:'0.15em'}}>Time Since Last Catch</p>
-
-                {phase === 'RESTING'    && <Bar pct={coolPct}  color="linear-gradient(90deg,#6366F1,#8B5CF6)" glow="rgba(139,92,246,0.7)"  label="Cooling down"  sub={`Priming in ${fmtDown(restDown)}`} />}
-                {phase === 'PRIMING'    && <Bar pct={primePct} color="linear-gradient(90deg,#F59E0B,#F97316)" glow="rgba(245,158,11,0.8)"  label="Priming phase" sub={`Trigger in ${fmtDown(primDown)}`} />}
-                {phase === 'TRIGGERING' && <Bar pct={sentPct}  color="linear-gradient(90deg,#10B981,#34D399)" glow="rgba(16,185,129,0.8)"  label="Next sentence" sub={`${tick}s`} />}
-              </section>
-
-              {/* Resting hint */}
-              {phase === 'RESTING' && (
-                <section className="glass rounded-xl px-5 py-3.5 text-center anim-slide-up">
-                  <p className="text-sm text-slate-500">
-                    No action needed. Priming begins at <span className="font-mono text-white">12:00</span>.
-                  </p>
-                </section>
-              )}
+            <main className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
 
               {/* Content box */}
               {showContent && (
@@ -2379,7 +2519,17 @@
                     <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">
                       {showCmd ? '🟢 Send This Now' : '🟡 Send This Sentence'}
                     </p>
-                    <span className="text-xs font-mono text-slate-700">Next in {tick}s</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={()=>setAutoCopy(v=>!v)}
+                              className="btn px-2 py-1 text-xs flex items-center gap-1"
+                              style={{background:autoCopy?'var(--indigo-dim)':'var(--s2)',
+                                      border:`1px solid ${autoCopy?'rgba(99,102,241,.4)':'var(--border)'}`,
+                                      color:autoCopy?'#818cf8':'var(--muted)'}}
+                              title="Auto-copy new sentences to clipboard">
+                        📋 Auto
+                      </button>
+                      <span className="text-xs font-mono text-slate-700">Next in {tick}s</span>
+                    </div>
                   </div>
 
                   {sentence ? (
@@ -2404,28 +2554,111 @@
                 </section>
               )}
 
-              {/* Live feed */}
-              {feed.length > 0 && (
-                <section className="glass rounded-xl p-4">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-3">Live Feed</p>
-                  <div className="space-y-1.5">
-                    {feed.map((item, i) => (
-                      <div key={i} className="flex gap-2.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/5"
-                           style={{background:'var(--s0)',border:'1px solid var(--border)',opacity:Math.max(0.25,1-i*0.11)}}>
-                        <span className="font-mono text-xs pt-0.5 flex-shrink-0 text-slate-700">{item.ts}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-slate-400 truncate">{item.s}</p>
-                          {item.c && <p className="text-xs font-mono text-indigo-500 mt-0.5">{item.c}</p>}
-                        </div>
-                        <span className="text-xs flex-shrink-0 pt-0.5">{item.ph==='TRIGGERING'?'🟢':'🟡'}</span>
+              {/* Right panel tabs */}
+              <section className="glass rounded-xl flex flex-col flex-1 min-h-0 overflow-hidden">
+                {/* Tab strip */}
+                <div className="flex border-b flex-shrink-0" style={{borderColor:'var(--border)'}}>
+                  {[['stats','Stats'],['history','History'],['collection','Collection']].map(([v,lbl]) => (
+                    <button key={v} onClick={()=>setRightTab(v)}
+                            className="flex-1 py-2.5 text-xs font-semibold transition-colors"
+                            style={{color:rightTab===v?'#A78BFA':'var(--muted)',
+                                    borderBottom:rightTab===v?'2px solid #8B5CF6':'2px solid transparent',
+                                    background:'transparent'}}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Stats tab */}
+                {rightTab === 'stats' && (() => {
+                  const catchItems = stats.history.filter(h=>h.type==='caught');
+                  const avgSec = catchItems.length > 1
+                    ? Math.round(catchItems.slice(0,-1).reduce((sum,h,i)=>{
+                        return sum + (h.ts - catchItems[i+1].ts)/1000;
+                      },0) / (catchItems.length-1))
+                    : null;
+                  const avgFmt = avgSec ? (avgSec>=60?`${Math.floor(avgSec/60)}m ${avgSec%60}s`:`${avgSec}s`) : '—';
+                  const total = stats.catches + stats.misses;
+                  const rate  = total > 0 ? ((stats.catches/total)*100).toFixed(1)+'%' : '—';
+                  return (
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        {[['Catches',stats.catches,'text-emerald-400'],['Misses',stats.misses,'text-rose-400'],
+                          ['Catch Rate',rate,'text-amber-400'],['Avg Time',avgFmt,'text-indigo-400'],
+                          ['Streak',stats.streak,'text-violet-400'],['Best Streak',stats.bestStreak,'text-cyan-400'],
+                        ].map(([label,val,color]) => (
+                          <div key={label} className="rounded-xl p-3 text-center" style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
+                            <p className={`text-xl font-bold font-mono ${color}`}>{val}</p>
+                            <p className="text-xs text-slate-600 mt-0.5">{label}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                      <button onClick={()=>setStats({ catches:0, misses:0, streak:0, bestStreak:0, history:[] })}
+                              className="btn btn-ghost w-full py-2 text-xs text-slate-700 hover:text-rose-400">
+                        Clear all stats
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* History tab */}
+                {rightTab === 'history' && (
+                  <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                    {stats.history.length === 0 && (
+                      <p className="text-center py-12 text-slate-600 text-sm">No history yet.</p>
+                    )}
+                    {stats.history.map((h,i) => {
+                      const time = new Date(h.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+                      const typeIcon  = h.type==='caught'?'✅':h.type==='miss'?'❌':h.type==='command'?'⚡':'💬';
+                      const typeColor = h.type==='caught'?'text-emerald-500':h.type==='miss'?'text-rose-500':h.type==='command'?'text-indigo-400':'text-slate-400';
+                      return (
+                        <div key={i} className="flex items-start gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
+                             style={{background:'var(--s0)',border:'1px solid var(--border)',opacity:Math.max(0.35,1-i*0.025)}}>
+                          <span className="text-sm flex-shrink-0 mt-0.5">{typeIcon}</span>
+                          <div className="flex-1 min-w-0">
+                            {h.content
+                              ? <p className="text-xs text-slate-400 truncate">{h.content}</p>
+                              : <p className={`text-xs font-semibold ${typeColor}`}>{h.type.charAt(0).toUpperCase()+h.type.slice(1)}</p>}
+                            <p className="text-xs text-slate-700 mt-0.5">at {time}{h.elapsed!=null?` · ${fmt(h.elapsed)} elapsed`:''}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                </section>
-              )}
+                )}
+
+                {/* Collection tab */}
+                {rightTab === 'collection' && (
+                  <CollectionTab collection={collection} setCollection={setCollection} />
+                )}
+              </section>
 
             </main>
           </div>
+
+          {/* Keyboard legend */}
+          <button onClick={()=>setShowKeys(v=>!v)}
+                  className="fixed bottom-4 right-4 z-30 btn w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center"
+                  style={{background:'var(--s2)',border:'1px solid var(--border)',color:'var(--muted)',boxShadow:'0 2px 12px rgba(0,0,0,0.4)'}}>
+            ?
+          </button>
+          {showKeys && (
+            <div className="fixed bottom-14 right-4 z-30 glass2 rounded-xl p-4 anim-slide-up"
+                 style={{width:'220px',border:'1px solid var(--border)'}}>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Keyboard Shortcuts</p>
+              <div className="space-y-1.5">
+                {[['C','CAUGHT!'],['M','MISS!'],['Space','Break / Resume'],['I','Open Identifier'],
+                  ['L','Open Ball List'],['N','Copy identified name'],['?','Toggle this legend']
+                ].map(([key,action]) => (
+                  <div key={key} className="flex items-center justify-between gap-3">
+                    <kbd className="text-xs font-mono px-2 py-0.5 rounded text-slate-300"
+                         style={{background:'var(--s2)',border:'1px solid var(--border)'}}>{key}</kbd>
+                    <span className="text-xs text-slate-500 text-right flex-1">{action}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Toast — renders above all modals */}
           {toast && (
@@ -2433,9 +2666,16 @@
           )}
 
           {/* Modals */}
-          {showBalls      && <BallModal          onClose={()=>setShowBalls(false)} />}
+          {showBalls      && <BallModal          onClose={()=>setShowBalls(false)}
+                                               collection={collection}
+                                               onToggleOwned={name => setCollection(prev => {
+                                                 const next = {...prev};
+                                                 if (next[name]) delete next[name]; else next[name] = true;
+                                                 return next;
+                                               })} />}
           {showSync       && <SyncModal          onClose={()=>setShowSync(false)} onSync={sync} />}
-          {showIdentifier && <IdentifierModal    onClose={()=>setShowIdentifier(false)} />}
+          {showIdentifier && <IdentifierModal    onClose={()=>setShowIdentifier(false)}
+                                               onIdentify={name => { lastIdentifiedNameR.current = name; }} />}
         </div>
       );
     }
