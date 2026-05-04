@@ -2290,7 +2290,6 @@
         try { return JSON.parse(localStorage.getItem(LS_COLLECTION)||'{}'); }
         catch(_) { return {}; }
       });
-      const [showKeys,   setShowKeys]   = useState(false);
       const [autoCopy,   setAutoCopy]   = useState(() => {
         try { return localStorage.getItem('bdx-autocopy') === 'true'; } catch(_){ return false; }
       });
@@ -2442,31 +2441,6 @@
         return () => clearInterval(id);
       }, [lastCatch]);
 
-      // ── Keyboard shortcuts ───────────────────────────────────────
-      useEffect(() => {
-        const onKey = e => {
-          const tag = document.activeElement?.tagName?.toLowerCase();
-          if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
-          switch(e.key.toLowerCase()) {
-            case 'c': e.preventDefault(); caught(); break;
-            case 'm': e.preventDefault(); miss();   break;
-            case ' ': e.preventDefault(); setStandby(v => !v); break;
-            case 'i': e.preventDefault(); setShowIdentifier(true); break;
-            case 'l': e.preventDefault(); setShowBalls(true); break;
-            case 'n':
-              e.preventDefault();
-              if (lastIdentifiedNameR.current) {
-                navigator.clipboard.writeText(lastIdentifiedNameR.current).catch(()=>{});
-                setToast({ msg: `📋 Copied: ${lastIdentifiedNameR.current}`, type:'prime', key:Date.now() });
-              }
-              break;
-            case '?': e.preventDefault(); setShowKeys(v => !v); break;
-            default: break;
-          }
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-      }, [caught, miss]);
 
       // ── Handlers ────────────────────────────────────────────────
       const reset = useCallback((ts = Date.now()) => {
@@ -2699,29 +2673,6 @@
             </main>
           </div>
 
-          {/* Keyboard legend */}
-          <button onClick={()=>setShowKeys(v=>!v)}
-                  className="fixed bottom-4 right-4 z-30 btn w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center"
-                  style={{background:'var(--s2)',border:'1px solid var(--border)',color:'var(--muted)',boxShadow:'0 2px 12px rgba(0,0,0,0.4)'}}>
-            ?
-          </button>
-          {showKeys && (
-            <div className="fixed bottom-14 right-4 z-30 glass2 rounded-xl p-4 anim-slide-up"
-                 style={{width:'220px',border:'1px solid var(--border)'}}>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Keyboard Shortcuts</p>
-              <div className="space-y-1.5">
-                {[['C','CAUGHT!'],['M','MISS!'],['Space','Break / Resume'],['I','Open Identifier'],
-                  ['L','Open Ball List'],['N','Copy identified name'],['?','Toggle this legend']
-                ].map(([key,action]) => (
-                  <div key={key} className="flex items-center justify-between gap-3">
-                    <kbd className="text-xs font-mono px-2 py-0.5 rounded text-slate-300"
-                         style={{background:'var(--s2)',border:'1px solid var(--border)'}}>{key}</kbd>
-                    <span className="text-xs text-slate-500 text-right flex-1">{action}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Toast — renders above all modals */}
           {toast && (
