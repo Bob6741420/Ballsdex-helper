@@ -2043,14 +2043,14 @@
     }
 
     function matchBalls(inputText, balls) {
-      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic', bssr:'byelorussiansovietsocialistrepublic', rsfsr:'russiansovietfederativesocialistrepublic', stlucia:'saintlucia', saintlucia:'saintlucia', stkitts:'saintkittsandnevis', stkittsandnevs:'saintkittsandnevis', stvincent:'saintvincentandthegrenadines', stmartin:'sintmaarten' };
+      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic', bssr:'byelorussiansovietsocialistrepublic', rsfsr:'russiansovietfederativesocialistrepublic', stlucia:'saintlucia', saintlucia:'saintlucia', stkitts:'saintkittsandnevis', stkittsandnevs:'saintkittsandnevis', stvincent:'saintvincentandthegrenadines', stmartin:'sintmaarten', bosnaandherzegovina:'bosnia', bosniaherzegovina:'bosnia', bih:'bosnia' };
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
       // strip flag emojis, parse :emoji1: → emoji, lowercase
       const parsed = inputText
         .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')
-        .replace(/:([a-z_]+)\d*:/gi, (_, n) => n.replace(/_/g, '') + ' ')
+        .replace(/:([a-z0-9_]+):/gi, (_, n) => n.replace(/[_0-9]/g, '') + ' ')
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ');
 
