@@ -1712,7 +1712,7 @@
     function BallModal({ onClose, collection, onToggleOwned }) {
       const [q, setQ] = useState('');
       const [filter, setFilter] = useState('all');
-      const ownedCount = useMemo(() => BALLS.filter(b => collection?.[b.name]).length, [collection]);
+      const ownedCount = BALLS.filter(b => collection?.[b.name]).length;
       const list = useMemo(() => {
         const lq = q.trim().toLowerCase();
         let base = lq ? BALLS.filter(b => b.name.toLowerCase().includes(lq) || String(b.tier).includes(lq) || b.rarity.toLowerCase().includes(lq)) : BALLS;
@@ -2102,7 +2102,7 @@
       const [preview,    setPreview]    = useState(null); // string[] of matched names | null
       const [importErr,  setImportErr]  = useState('');
 
-      const ownedCount = useMemo(() => BALLS.filter(b => collection[b.name]).length, [collection]);
+      const ownedCount = BALLS.filter(b => collection[b.name]).length;
       const collList = useMemo(() => {
         let list = BALLS;
         if (collQ.trim()) { const lq = collQ.toLowerCase(); list = list.filter(b => b.name.toLowerCase().includes(lq)); }
