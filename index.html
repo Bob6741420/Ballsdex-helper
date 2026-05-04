@@ -2043,7 +2043,7 @@
     }
 
     function matchBalls(inputText, balls) {
-      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic', stlucia:'saintlucia', saintlucia:'saintlucia', stkitts:'saintkittsandnevis', stvincent:'saintvincentandthegrenadines', stmartin:'sintmaarten' };
+      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic', bssr:'byelorussiansovietsocialistrepublic', rsfsr:'russiansovietfederativesocialistrepublic', stlucia:'saintlucia', saintlucia:'saintlucia', stkitts:'saintkittsandnevis', stkittsandnevs:'saintkittsandnevis', stvincent:'saintvincentandthegrenadines', stmartin:'sintmaarten' };
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
@@ -2062,7 +2062,8 @@
       const unmatched = [];
 
       for (const tok of raw) {
-        const sl = ABBREV[tok] || slugify(tok);
+        const rawSlug = slugify(tok);
+        const sl = ABBREV[tok] || ABBREV[rawSlug] || rawSlug;
         let found = false;
 
         // exact slug
