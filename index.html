@@ -2085,19 +2085,18 @@
           }
         }
 
-        // fuzzy (single-word balls only)
-        if (!found && sl.length >= 4) {
+        // best-match fallback: pick closest ball by Levenshtein across all balls
+        if (!found && sl.length >= 3) {
+          let bestName = null, bestDist = Infinity;
           for (const name of balls) {
-            if (name.includes(' ')) continue;
             const dist = levenshtein(sl, slugify(name));
-            if (dist <= Math.max(1, Math.floor(sl.length / 5))) { matched.add(name); found = true; break; }
+            if (dist < bestDist) { bestDist = dist; bestName = name; }
           }
+          if (bestName) { matched.add(bestName); found = true; }
         }
-
-        if (!found) unmatched.push(tok);
       }
 
-      return { matched: [...matched], unmatched };
+      return { matched: [...matched], unmatched: [] };
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -2196,30 +2195,15 @@
                               </div>
                             </>
                           )}
-                          {preview.unmatched.length > 0 && (
-                            <>
-                              <p className="text-xs text-rose-400">Not recognized ({preview.unmatched.length}):</p>
-                              <div className="rounded-lg overflow-y-auto space-y-px" style={{maxHeight:'80px'}}>
-                                {preview.unmatched.map(tok => (
-                                  <div key={tok} className="flex items-center gap-2 px-2 py-1">
-                                    <span className="text-rose-400 text-xs">✗</span>
-                                    <span className="text-xs text-slate-400 font-mono">{tok}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
-                          )}
                           <div className="flex gap-2">
                             <button onClick={()=>setPreview(null)} className="btn flex-1 py-1.5 text-xs text-slate-500"
                                     style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
                               ← Redo
                             </button>
-                            {preview.matched.length > 0 && (
-                              <button onClick={applyPreview} className="btn flex-1 py-1.5 text-xs font-semibold text-emerald-400"
-                                      style={{background:'var(--emerald-dim)',border:'1px solid rgba(16,185,129,.4)'}}>
-                                ✓ Mark all as owned
-                              </button>
-                            )}
+                            <button onClick={applyPreview} className="btn flex-1 py-1.5 text-xs font-semibold text-emerald-400"
+                                    style={{background:'var(--emerald-dim)',border:'1px solid rgba(16,185,129,.4)'}}>
+                              ✓ Mark all as owned
+                            </button>
                           </div>
                         </>
                       }
