@@ -2043,7 +2043,7 @@
     }
 
     function matchBalls(inputText, balls) {
-      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea' };
+      const ABBREV = { usa:'unitedstates', uk:'unitedkingdom', uae:'unitedarabemirates', drc:'democraticrepublicofthecongo', ussr:'sovietunion', gb:'greatbritain', prc:'china', roc:'taiwan', nz:'newzealand', sa:'southafrica', sk:'southkorea', nk:'northkorea', ukrainessr:'ukrainiansovietsocialistrepublic', ukrainianssr:'ukrainiansovietsocialistrepublic', byelorussiassr:'byelorussiansovietsocialistrepublic', belarusssr:'byelorussiansovietsocialistrepublic' };
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
@@ -2073,6 +2073,17 @@
         for (const name of balls) {
           if (matched.has(name)) continue;
           if (name.toLowerCase().split(/\s+/).includes(tok)) { matched.add(name); break; }
+        }
+      }
+
+      // Pass 2.5: containment — input slug contains ball slug (e.g. secondfrenchempire ⊃ frenchempire)
+      for (const tok of raw) {
+        const sl = ABBREV[tok] || slugify(tok);
+        if (sl.length < 8) continue;
+        for (const name of balls) {
+          if (matched.has(name)) continue;
+          const bs = slugify(name);
+          if (bs.length >= 7 && sl.includes(bs)) { matched.add(name); break; }
         }
       }
 
