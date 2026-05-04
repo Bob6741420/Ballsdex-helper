@@ -2069,13 +2069,6 @@
         // exact slug
         if (slugIndex[sl]) { matched.add(slugIndex[sl]); found = true; }
 
-        // word-level
-        if (!found && sl.length >= 4) {
-          for (const name of balls) {
-            if (name.toLowerCase().split(/\s+/).includes(sl)) { matched.add(name); found = true; break; }
-          }
-        }
-
         // containment: input slug wraps ball slug (secondfrenchempire ⊃ frenchempire)
         if (!found && sl.length >= 8) {
           for (const name of balls) {
