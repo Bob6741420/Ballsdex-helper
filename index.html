@@ -2047,15 +2047,21 @@
       const slugIndex = {};
       for (const name of balls) slugIndex[slugify(name)] = name;
 
-      // parse: Discord :emoji1: → emoji, then plain text
+      // strip flag emojis (regional indicators), parse :emoji1: → emoji, lowercase
       const parsed = inputText
+        .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')   // 🇫🇷 🇩🇪 etc
         .replace(/:([a-z_]+)\d*:/gi, (_, n) => n.replace(/_/g, '') + ' ')
-        .toLowerCase().replace(/[^\w\s]/g, ' ');
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ');
 
-      const raw = parsed.split(/\s+/).filter(t => t.length > 1);
+      // strip trailing digits from each token (France1 → france, germany3 → germany)
+      const raw = parsed.split(/\s+/)
+        .map(t => t.replace(/\d+$/, ''))
+        .filter(t => t.length > 1);
+
       const matched = new Set();
 
-      // Pass 1: slug match (handles :france1: → france → France perfectly)
+      // Pass 1: slug match (handles :france1: → france → France, France1 → france → France)
       for (const tok of raw) {
         const slug = ABBREV[tok] || slugify(tok);
         if (slugIndex[slug]) matched.add(slugIndex[slug]);
