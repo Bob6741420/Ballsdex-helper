@@ -1184,7 +1184,39 @@
       {name:"Prides",     emoji:"🏳️‍🌈",value:"0.1–0.2 T1s/common", demand:"Mid"},
     ];
 
+    const RARITY_SPAWN = [
+      {rarity:"Mythical",  tier:"T1–T10",    rate:"~0.03–0.3%",  color:"#c4b5fd", bg:"rgba(167,139,250,.15)", border:"rgba(167,139,250,.4)"},
+      {rarity:"Legendary", tier:"T11–T30",   rate:"~0.3–0.9%",   color:"#fcd34d", bg:"rgba(245,158,11,.12)",  border:"rgba(245,158,11,.35)"},
+      {rarity:"Epic",      tier:"T35–T75",   rate:"~1–2.5%",     color:"#a5b4fc", bg:"rgba(99,102,241,.12)",  border:"rgba(99,102,241,.35)"},
+      {rarity:"Rare",      tier:"T77–T130",  rate:"~2–4%",       color:"#93c5fd", bg:"rgba(59,130,246,.12)",  border:"rgba(59,130,246,.35)"},
+      {rarity:"Uncommon",  tier:"T131–T212", rate:"~4–8%",       color:"#86efac", bg:"rgba(74,222,128,.10)",  border:"rgba(74,222,128,.30)"},
+      {rarity:"Common",    tier:"T213+",     rate:"~8–15%",      color:"#6ee7b7", bg:"rgba(16,185,129,.12)",  border:"rgba(16,185,129,.35)"},
+    ];
 
+    const EVENT_CALENDAR = [
+      {emoji:"🧧", name:"Lunar New Year", when:"Jan–Feb",  key:"lny"},
+      {emoji:"🎭", name:"Mardi Gras",     when:"Feb–Mar",  key:"mardigras"},
+      {emoji:"🍀", name:"St. Patrick's",  when:"Mar 17",   key:"clover"},
+      {emoji:"🌸", name:"Spring",         when:"Mar–Apr",  key:"spring"},
+      {emoji:"🥚", name:"Easter",         when:"Mar–Apr",  key:"easter"},
+      {emoji:"🎉", name:"Birthday",       when:"Mar–Apr",  key:"cake"},
+      {emoji:"🏳️‍🌈",name:"Pride",          when:"June",     key:"pride"},
+      {emoji:"☀️", name:"Summer",         when:"Jun–Aug",  key:"summer"},
+      {emoji:"🚀", name:"Rocket",         when:"July",     key:"rocket"},
+      {emoji:"🛸", name:"UFO",            when:"Varies",   key:"ufo"},
+      {emoji:"🦇", name:"Bat",            when:"October",  key:"bat"},
+      {emoji:"🎃", name:"Halloween",      when:"October",  key:"spooky"},
+      {emoji:"👻", name:"Ghost",          when:"Oct–Nov",  key:"ghost"},
+      {emoji:"🦃", name:"Thanksgiving",   when:"November", key:"gobble"},
+      {emoji:"🕯️", name:"Candle",         when:"Nov–Dec",  key:"candle"},
+      {emoji:"❄️", name:"Christmas",      when:"December", key:"xmas"},
+      {emoji:"🎄", name:"Tree",           when:"December", key:"tree"},
+      {emoji:"🎁", name:"Gift",           when:"December", key:"gift"},
+      {emoji:"🎆", name:"New Year",       when:"Dec–Jan",  key:"ny"},
+      {emoji:"☄️", name:"Comet",          when:"Periodic", key:"comet"},
+      {emoji:"✨", name:"Shiny",          when:"Periodic", key:"shiny"},
+      {emoji:"🌌", name:"Mythical",       when:"Varies",   key:"mythical"},
+    ];
 
     const SPECIAL_KEYS = ["spooky","xmas","easter","summer","cake","ghost","gobble","tree","lny","pride","bat","gift","ny","clover","spring","comet","candle","mardigras","rocket","ufo","shiny","mythical"];
     const SPECIAL_LABELS = {spooky:"Spooky \u{1F383}",xmas:"Xmas 22 ❄️",easter:"Easter \u{1F95A}",summer:"Summer ☀️",cake:"Cake \u{1F389}",ghost:"Ghost \u{1F47B}",gobble:"Gobble \u{1F983}",tree:"Tree \u{1F384}",lny:"LNY \u{1F9E7}",pride:"Pride \u{1F3F3}️‍\u{1F308}",bat:"Bat \u{1F987}",gift:"Gift \u{1F381}",ny:"NY 2025 \u{1F386}",clover:"Clover \u{1F340}",spring:"Spring \u{1F338}",comet:"Comet ☄️",candle:"Candle \u{1F56F}️",mardigras:"Mardi Gras \u{1F3AD}",rocket:"Rocket \u{1F680}",ufo:"UFO \u{1F6F8}",shiny:"Shiny ✨",mythical:"Mythical \u{1F30C}"};
@@ -2597,8 +2629,8 @@
 
       const demandColor = { Great:'text-emerald-400', Good:'text-blue-400', Mid:'text-amber-400', Terrible:'text-red-400', Bad:'text-orange-400' };
 
-      const tabs = [['specials','By Ball ⚽'],['normals','Normals'],['types','Special Types']];
-      const resultCount = tab === 'normals' ? normalResults.length : tab === 'specials' ? ballSpecialResults.length : typeResults.length;
+      const tabs = [['specials','By Ball ⚽'],['normals','Normals'],['types','Special Types'],['prob','Probability 📊']];
+      const resultCount = tab === 'normals' ? normalResults.length : tab === 'specials' ? ballSpecialResults.length : tab === 'types' ? typeResults.length : null;
 
       return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6"
@@ -2609,7 +2641,7 @@
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
               <div>
                 <h2 className="font-semibold text-white text-sm">Trade Value Lookup</h2>
-                <p className="text-xs mt-0.5 text-slate-600">Nile's List · May 2026 · {resultCount} results</p>
+                <p className="text-xs mt-0.5 text-slate-600">Nile's List · May 2026{resultCount !== null ? ` · ${resultCount} results` : ''}</p>
               </div>
               <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
             </div>
@@ -2687,6 +2719,70 @@
               ))}
               {tab === 'types' && typeResults.length === 0 && (
                 <div className="text-center py-12 text-slate-600 text-sm">No match for "{q}"</div>
+              )}
+
+              {/* ── Probability tab ── */}
+              {tab === 'prob' && (
+                <div className="p-3 space-y-5">
+                  {/* Spawn Rates by Rarity */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">Spawn Rates by Rarity</p>
+                    <div className="space-y-1">
+                      {RARITY_SPAWN.map(r => (
+                        <div key={r.rarity} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5">
+                          <span className="text-xs font-semibold w-20 flex-shrink-0" style={{color:r.color}}>{r.rarity}</span>
+                          <span className="text-xs text-slate-500 flex-1">{r.tier}</span>
+                          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg border flex-shrink-0"
+                                style={{background:r.bg, borderColor:r.border, color:r.color}}>
+                            {r.rate}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-700 px-1 mt-2">Spawn chance is proportional to each ball's rarity weight — lower tier = rarer.</p>
+                  </div>
+
+                  {/* Special spawn rates */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">Special Ball Spawn Rates</p>
+                    <div className="space-y-1">
+                      {[
+                        {label:"Shiny events",       rate:"1/2048", note:"~0.049% per spawn", color:"#fcd34d", bg:"rgba(245,158,11,.12)", border:"rgba(245,158,11,.35)"},
+                        {label:"Birthday (Cakes)",   rate:"~5%",    note:"Birthday 2024 confirmed", color:"#a5b4fc", bg:"rgba(99,102,241,.12)", border:"rgba(99,102,241,.35)"},
+                        {label:"Most seasonal events",rate:"1–10%", note:"Varies by event config", color:"#6ee7b7", bg:"rgba(16,185,129,.12)", border:"rgba(16,185,129,.35)"},
+                      ].map(s => (
+                        <div key={s.label} className="flex items-start gap-2 px-3 py-2 rounded-xl hover:bg-white/5">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-white">{s.label}</p>
+                            <p className="text-xs text-slate-600 mt-0.5">{s.note}</p>
+                          </div>
+                          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg border flex-shrink-0 mt-0.5"
+                                style={{background:s.bg, borderColor:s.border, color:s.color}}>
+                            {s.rate}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Event Calendar */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">Event Calendar</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {EVENT_CALENDAR
+                        .filter(e => !q || e.name.toLowerCase().includes(q.toLowerCase()) || e.key.includes(q.toLowerCase()))
+                        .map(e => (
+                        <div key={e.key} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5">
+                          <span className="text-base w-6 text-center flex-shrink-0">{e.emoji}</span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-white truncate">{e.name}</p>
+                            <p className="text-xs text-slate-600">{e.when}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               )}
 
             </div>
