@@ -5,9 +5,10 @@
 const PRIMING_START    = 720;   // 12 min
 const TRIGGERING_START = 900;   // 15 min
 
-let loopId    = null;
-let sentTick  = 60;
-let lastCatch = 0;
+let loopId      = null;
+let sentTick    = 60;
+let sentInterval = 60;
+let lastCatch   = 0;
 
 self.addEventListener('install',  () => self.skipWaiting());
 self.addEventListener('activate', e  => e.waitUntil(self.clients.claim()));
@@ -17,8 +18,15 @@ self.addEventListener('message', ({ data }) => {
   if (!data) return;
 
   if (data.type === 'SYNC') {
-    lastCatch = data.lastCatch;
-    sentTick  = 60;
+    lastCatch    = data.lastCatch;
+    sentInterval = data.sentInterval || 60;
+    // Preserve countdown: compute remaining seconds since page last showed a sentence
+    if (data.lastSent > 0) {
+      const elapsed = (Date.now() - data.lastSent) / 1000;
+      sentTick = Math.max(1, Math.ceil(sentInterval - elapsed));
+    } else {
+      sentTick = 1; // no prior sentence — fire immediately
+    }
     startLoop();
   }
 
@@ -56,7 +64,7 @@ function startLoop() {
           'Open your Spawn Commander to copy the next message.',
           'sentence'
         );
-        sentTick = 60;
+        sentTick = sentInterval;
       }
     }
   }, 1000);

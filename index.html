@@ -803,6 +803,402 @@
     ];
 
     /* ═══════════════════════════════════════════════════════════════
+       TRADE VALUE DATA  (Nile's List, May 2026)
+    ═══════════════════════════════════════════════════════════════ */
+    const TRADE_VALUES = [
+      {name:"British Empire",                         value:"1 T1"},
+      {name:"Reichtangle",                            value:"1 T1"},
+      {name:"Russian Empire",                         value:"1 T1"},
+      {name:"Mongol Empire",                          value:"0.8 T1s"},
+      {name:"Kalmar Union",                           value:"0.5 T1s"},
+      {name:"Roman Empire",                           value:"0.5 T1s"},
+      {name:"Papal States",                           value:"0.4 T1s"},
+      {name:"Polish-Lithuanian Commonwealth",         value:"0.4 T1s"},
+      {name:"Qin Dynasty",                            value:"0.3 T1s"},
+      {name:"German Empire",                          value:"0.2 T1s"},
+      {name:"Han Dynasty",                            value:"0.2 T1s"},
+      {name:"Holy Roman Empire",                      value:"0.15 T1s"},
+      {name:"Akkadian Empire",                        value:"0.15 T1s"},
+      {name:"Austria-Hungary",                        value:"0.1 T1s"},
+      {name:"Hunnic Empire",                          value:"0.1 T1s"},
+      {name:"Japanese Empire",                        value:"0.1 T1s"},
+      {name:"Republic of China",                      value:"0.1 T1s"},
+      {name:"Soviet Union",                           value:"0.1 T1s"},
+      {name:"Tokugawa Shogunate",                     value:"0.1 T1s"},
+      {name:"United States",                          value:"0.1 T1s"},
+      {name:"Vatican",                                value:"0.05 T1s"},
+      {name:"Republic of Texas",                      value:"0.05 T1s"},
+      {name:"Russia",                                 value:"0.05 T1s"},
+      {name:"Gupta Empire",                           value:"0.05 T1s"},
+      {name:"China",                                  value:"0.05 T1s"},
+      {name:"Austrian Empire",                        value:"0.05 T1s"},
+      {name:"Joseon",                                 value:"0.05 T1s"},
+      {name:"Ancient Troy",                           value:"0.05 T1s"},
+      {name:"India",                                  value:"0.05 T1s"},
+      {name:"Ancient Greece",                         value:"0.025 T1s (≈20c)"},
+      {name:"Japan",                                  value:"0.025 T1s (≈20c)"},
+      {name:"Korea",                                  value:"0.025 T1s (≈20c)"},
+      {name:"Napoleonic France",                      value:"0.025 T1s (≈20c)"},
+      {name:"Ottoman Empire",                         value:"0.025 T1s (≈20c)"},
+      {name:"Phoenicia",                              value:"18 commons"},
+      {name:"BRICS",                                  value:"15 commons"},
+      {name:"Republic of Venice",                     value:"15 commons"},
+      {name:"South Korea",                            value:"15 commons"},
+      {name:"France",                                 value:"12 commons"},
+      {name:"Spanish Empire",                         value:"12 commons"},
+      {name:"United Kingdoms of Sweden and Norway",   value:"12 commons"},
+      {name:"Achaemenid Empire",                      value:"10 commons"},
+      {name:"Macedon",                                value:"10 commons"},
+      {name:"United Kingdom",                         value:"10 commons"},
+      {name:"Empire of Brazil",                       value:"9 commons"},
+      {name:"Kingdom of Leinster",                    value:"9 commons"},
+      {name:"Pakistan",                               value:"9 commons"},
+      {name:"Sumer",                                  value:"9 commons"},
+      {name:"Ancient Egypt",                          value:"8 commons"},
+      {name:"Brazil",                                 value:"8 commons"},
+      {name:"Byzantium",                              value:"8 commons"},
+      {name:"Greenland",                              value:"8 commons"},
+      {name:"Portuguese Empire",                      value:"8 commons"},
+      {name:"Qing Dynasty",                           value:"8 commons"},
+      {name:"British Raj",                            value:"7 commons"},
+      {name:"Carthage",                               value:"7 commons"},
+      {name:"Italy",                                  value:"7 commons"},
+      {name:"Kingdom of Italy",                       value:"7 commons"},
+      {name:"Third French Republic",                  value:"7 commons"},
+      {name:"Egypt",                                  value:"6.5 commons"},
+      {name:"Soviet Russia",                          value:"6.5 commons"},
+      {name:"Turkey",                                 value:"6.5 commons"},
+      {name:"Iran",                                   value:"6.5 commons"},
+      {name:"Kingdom of Greece",                      value:"6.5 commons"},
+      {name:"Konbaung Empire",                        value:"6.5 commons"},
+      {name:"North German Confederation",             value:"6.5 commons"},
+      {name:"African Union",                          value:"6 commons"},
+      {name:"Arab League",                            value:"6 commons"},
+      {name:"Confederate States",                     value:"6 commons"},
+      {name:"Gaul",                                   value:"6 commons"},
+      {name:"Germania",                               value:"6 commons"},
+      {name:"Indonesia",                              value:"6 commons"},
+      {name:"Kingdom of Hungary",                     value:"6 commons"},
+      {name:"Mayan Empire",                           value:"6 commons"},
+      {name:"Yugoslavia",                             value:"6 commons"},
+      {name:"Germany",                                value:"5 commons"},
+      {name:"Australia",                              value:"4.5 commons"},
+      {name:"Hong Kong",                              value:"4.5 commons"},
+      {name:"Israel",                                 value:"4.5 commons"},
+      {name:"Xiongnu",                                value:"4.5 commons"},
+      {name:"Swedish Empire",                         value:"4.5 commons"},
+      {name:"Spain",                                  value:"4.5 commons"},
+      {name:"Olmecs",                                 value:"4.5 commons"},
+      {name:"Antarctica",                             value:"4.5 commons"},
+      {name:"Ming Dynasty",                           value:"4.5 commons"},
+      {name:"Saudi Arabia",                           value:"4.5 commons"},
+      {name:"Xia Dynasty",                            value:"4.5 commons"},
+      {name:"Franks",                                 value:"4 commons"},
+      {name:"League of Nations",                      value:"4 commons"},
+      {name:"Monaco",                                 value:"4 commons"},
+      {name:"Union of South Africa",                  value:"4 commons"},
+      {name:"Ukraine",                                value:"4 commons"},
+      {name:"Canada",                                 value:"4 commons"},
+      {name:"Kingdom of Two Sicilies",                value:"4 commons"},
+      {name:"Kingdom of Brandenburg",                 value:"4 commons"},
+      {name:"Kingdom of Ulaid",                       value:"4 commons"},
+      {name:"Poland",                                 value:"4 commons"},
+      {name:"Sweden",                                 value:"4 commons"},
+      {name:"Kingdom of Munster",                     value:"4 commons"},
+      {name:"Macau",                                  value:"4 commons"},
+      {name:"Scotland",                               value:"4 commons"},
+      {name:"South Africa",                           value:"4 commons"},
+      {name:"Greece",                                 value:"3.5 commons"},
+      {name:"Vietnam",                                value:"3.5 commons"},
+      {name:"Kingdom of Connacht",                    value:"3.5 commons"},
+      {name:"Parthian Empire",                        value:"3.5 commons"},
+      {name:"Thailand",                               value:"3.5 commons"},
+      {name:"North Korea",                            value:"3 commons"},
+      {name:"England",                                value:"3 commons"},
+      {name:"European Union",                         value:"3 commons"},
+      {name:"NATO",                                   value:"3 commons"},
+      {name:"United Nations",                         value:"3 commons"},
+      {name:"Warsaw Pact",                            value:"3 commons"},
+      {name:"Weimar Republic",                        value:"3 commons"},
+      {name:"Zhou Dynasty",                           value:"3 commons"},
+      {name:"Argentine Confederation",                value:"2.5 commons"},
+      {name:"Armenian Empire",                        value:"2.5 commons"},
+      {name:"Assyrian Empire",                        value:"2.5 commons"},
+      {name:"ASEAN",                                  value:"2.5 commons"},
+      {name:"Kingdom of Hawaii",                      value:"2.5 commons"},
+      {name:"Kingdom of Bali",                        value:"2.5 commons"},
+      {name:"Kingdom of Bora Bora",                   value:"2.5 commons"},
+      {name:"Yuan Dynasty",                           value:"2.5 commons"},
+      {name:"Bavaria",                                value:"2.5 commons"},
+      {name:"Algeria",                                value:"2 commons"},
+      {name:"Argentina",                              value:"2 commons"},
+      {name:"Bangladesh",                             value:"2 commons"},
+      {name:"Colombia",                               value:"2 commons"},
+      {name:"Czechia",                                value:"2 commons"},
+      {name:"Iraq",                                   value:"2 commons"},
+      {name:"Malaysia",                               value:"2 commons"},
+      {name:"Mexico",                                 value:"2 commons"},
+      {name:"Myanmar",                                value:"2 commons"},
+      {name:"Netherlands",                            value:"2 commons"},
+      {name:"Nigeria",                                value:"2 commons"},
+      {name:"Norway",                                 value:"2 commons"},
+      {name:"Peru",                                   value:"2 commons"},
+      {name:"Philippines",                            value:"2 commons"},
+      {name:"Portugal",                               value:"2 commons"},
+      {name:"Prussia",                                value:"2 commons"},
+      {name:"Romania",                                value:"2 commons"},
+      {name:"Singapore",                              value:"2 commons"},
+      {name:"Switzerland",                            value:"2 commons"},
+      {name:"Syria",                                  value:"2 commons"},
+      {name:"Tuvalu",                                 value:"2 commons"},
+      {name:"United Arab Emirates",                   value:"2 commons"},
+      {name:"Venezuela",                              value:"2 commons"},
+      {name:"Kingdom of Cao Wei",                     value:"1.5 commons"},
+      {name:"Kingdom of Shu Han",                     value:"1.5 commons"},
+      {name:"Kingdom of Sun Wu",                      value:"1.5 commons"},
+      {name:"Mali Empire",                            value:"1.5 commons"},
+      {name:"Soviet Ukraine",                         value:"1.5 commons"},
+      {name:"Federal Republic of Central America",    value:"1.5 commons"},
+      {name:"Ancient Athens",                         value:"1.5 commons"},
+      {name:"Ancient Sparta",                         value:"1.5 commons"},
+      {name:"Babylon",                                value:"1.5 commons"},
+      {name:"Czechoslovakia",                         value:"1.5 commons"},
+      {name:"Ethiopian Empire",                       value:"1.5 commons"},
+      {name:"French Indochina",                       value:"1.5 commons"},
+      {name:"Nauru",                                  value:"1.5 commons"},
+      {name:"Numidia",                                value:"1.5 commons"},
+      {name:"Quebec",                                 value:"1.5 commons"},
+      {name:"Siam",                                   value:"1.5 commons"},
+      {name:"South Vietnam",                          value:"1.5 commons"},
+      {name:"Taiwan",                                 value:"1.5 commons"},
+      {name:"Wales",                                  value:"1.5 commons"},
+      {name:"West Germany",                           value:"1.5 commons"},
+      {name:"Kingdom of Egypt",                       value:"1 common"},
+      {name:"Mughal Empire",                          value:"1 common"},
+      {name:"Angola",                                 value:"1 common"},
+      {name:"Austria",                                value:"1 common"},
+      {name:"Azerbaijan",                             value:"1 common"},
+      {name:"Bahamas",                                value:"1 common"},
+      {name:"Belarus",                                value:"1 common"},
+      {name:"Belgium",                                value:"1 common"},
+      {name:"Bolivia",                                value:"1 common"},
+      {name:"Bulgaria",                               value:"1 common"},
+      {name:"Chile",                                  value:"1 common"},
+      {name:"Croatia",                                value:"1 common"},
+      {name:"Cuba",                                   value:"1 common"},
+      {name:"Cyprus",                                 value:"1 common"},
+      {name:"Denmark",                                value:"1 common"},
+      {name:"DR Congo",                               value:"1 common"},
+      {name:"Ecuador",                                value:"1 common"},
+      {name:"Ethiopia",                               value:"1 common"},
+      {name:"Finland",                                value:"1 common"},
+      {name:"Hungary",                                value:"1 common"},
+      {name:"Iberian Union",                          value:"1 common"},
+      {name:"Jordan",                                 value:"1 common"},
+      {name:"Kazakhstan",                             value:"1 common"},
+      {name:"Kenya",                                  value:"1 common"},
+      {name:"Kuwait",                                 value:"1 common"},
+      {name:"Libya",                                  value:"1 common"},
+      {name:"Morocco",                                value:"1 common"},
+      {name:"North Vietnam",                          value:"1 common"},
+      {name:"Oman",                                   value:"1 common"},
+      {name:"Qatar",                                  value:"1 common"},
+      {name:"San Marino",                             value:"1 common"},
+      {name:"Serbia",                                 value:"1 common"},
+      {name:"Slovakia",                               value:"1 common"},
+      {name:"Sri Lanka",                              value:"1 common"},
+      {name:"Sudan",                                  value:"1 common"},
+      {name:"Tunisia",                                value:"1 common"},
+      {name:"Turkmenistan",                           value:"1 common"},
+      {name:"Uzbekistan",                             value:"1 common"},
+      {name:"Yemen",                                  value:"1 common"},
+      {name:"Republic of New Granada",                value:"1 common"},
+      {name:"Faroe Islands",                          value:"1 common"},
+      {name:"Trinidad and Tobago",                    value:"1 common"},
+      {name:"Orange Free State",                      value:"1 common"},
+      {name:"East Germany",                           value:"1 common"},
+      {name:"Emirate of Nejd",                        value:"1 common"},
+      {name:"Free France",                            value:"1 common"},
+      {name:"Golden Horde",                           value:"1 common"},
+      {name:"Jamaica",                                value:"1 common"},
+      {name:"Maldives",                               value:"1 common"},
+      {name:"Northern Ireland",                       value:"1 common"},
+      {name:"Tibet",                                  value:"1 common"},
+      {name:"Vichy France",                           value:"1 common"},
+      {name:"Andorra",                                value:"1 common"},
+      {name:"Brunei",                                 value:"1 common"},
+      {name:"Grand Duchy of Tuscany",                 value:"1 common"},
+      {name:"Khedivate of Egypt",                     value:"1 common"},
+      {name:"Micronesia",                             value:"1 common"},
+      {name:"Soviet Belarus",                         value:"1 common"},
+      {name:"Tonga",                                  value:"1 common"},
+      {name:"Khmer Empire",                           value:"1 common"},
+      {name:"Barbados",                               value:"1 common"},
+      {name:"Kingdom of Saxony",                      value:"1 common"},
+      {name:"Marshall Islands",                       value:"1 common"},
+      {name:"Armenia",                                value:"1 common"},
+      {name:"Bahrain",                                value:"1 common"},
+      {name:"Cambodia",                               value:"1 common"},
+      {name:"Chad",                                   value:"1 common"},
+      {name:"Congo Free State",                       value:"1 common"},
+      {name:"Equatorial Guinea",                      value:"1 common"},
+      {name:"Fatimid Caliphate",                      value:"1 common"},
+      {name:"Georgia",                                value:"1 common"},
+      {name:"Ghana",                                  value:"1 common"},
+      {name:"Guatemala",                              value:"1 common"},
+      {name:"Guyana",                                 value:"1 common"},
+      {name:"Ireland",                                value:"1 common"},
+      {name:"Kyrgyzstan",                             value:"1 common"},
+      {name:"Latvia",                                 value:"1 common"},
+      {name:"Lithuania",                              value:"1 common"},
+      {name:"Mali",                                   value:"1 common"},
+      {name:"Malta",                                  value:"1 common"},
+      {name:"Mongolia",                               value:"1 common"},
+      {name:"New Zealand",                            value:"1 common"},
+      {name:"Samoa",                                  value:"1 common"},
+      {name:"Slovenia",                               value:"1 common"},
+      {name:"Togo",                                   value:"1 common"},
+      {name:"Uruguay",                                value:"1 common"},
+      {name:"Uganda",                                 value:"1 common"},
+      {name:"Zambia",                                 value:"1 common"},
+      {name:"Zimbabwe",                               value:"1 common"},
+      {name:"Duchy of Limburg",                       value:"1 common"},
+      {name:"Malawi",                                 value:"1 common"},
+      {name:"Kingdom of Sardinia",                    value:"1 common"},
+      {name:"Rashidi Emirate",                        value:"1 common"},
+      {name:"Costa Rica",                             value:"1 common"},
+      {name:"Dominica",                               value:"1 common"},
+      {name:"Guinea-Bissau",                          value:"1 common"},
+      {name:"Sao Tome and Principe",                  value:"1 common"},
+      {name:"Tannu Tuva",                             value:"1 common"},
+      {name:"Free City of Frankfurt",                 value:"1 common"},
+      {name:"Kingdom of Iberia",                      value:"1 common"},
+      {name:"Seychelles",                             value:"1 common"},
+      {name:"Afghanistan",                            value:"1 common"},
+      {name:"Albania",                                value:"1 common"},
+      {name:"Belize",                                 value:"1 common"},
+      {name:"Bosnia & Herzegovina",                   value:"1 common"},
+      {name:"Botswana",                               value:"1 common"},
+      {name:"Cameroon",                               value:"1 common"},
+      {name:"Ceylon",                                 value:"1 common"},
+      {name:"Congo",                                  value:"1 common"},
+      {name:"Dominican Republic",                     value:"1 common"},
+      {name:"Eritrea",                                value:"1 common"},
+      {name:"Estonia",                                value:"1 common"},
+      {name:"Eswatini",                               value:"1 common"},
+      {name:"Fiji",                                   value:"1 common"},
+      {name:"Free City of Danzig",                    value:"1 common"},
+      {name:"Gambia",                                 value:"1 common"},
+      {name:"Haiti",                                  value:"1 common"},
+      {name:"Honduras",                               value:"1 common"},
+      {name:"Ivory Coast",                            value:"1 common"},
+      {name:"Khiva",                                  value:"1 common"},
+      {name:"Laos",                                   value:"1 common"},
+      {name:"Lebanon",                                value:"1 common"},
+      {name:"Liechtenstein",                          value:"1 common"},
+      {name:"Moldova",                                value:"1 common"},
+      {name:"Mossi Kingdoms",                         value:"1 common"},
+      {name:"Mozambique",                             value:"1 common"},
+      {name:"Nepal",                                  value:"1 common"},
+      {name:"Nicaragua",                              value:"1 common"},
+      {name:"Niger",                                  value:"1 common"},
+      {name:"Palestine",                              value:"1 common"},
+      {name:"Paraguay",                               value:"1 common"},
+      {name:"St. Kitts and Nevis",                    value:"1 common"},
+      {name:"St. Lucia",                              value:"1 common"},
+      {name:"Somaliland",                             value:"1 common"},
+      {name:"South Sudan",                            value:"1 common"},
+      {name:"South Yemen",                            value:"1 common"},
+      {name:"Tajikistan",                             value:"1 common"},
+      {name:"Tanzania",                               value:"1 common"},
+      {name:"Western Sahara",                         value:"1 common"},
+      {name:"Peru-Bolivian Confederation",            value:"1 common"},
+      {name:"Zapotecs",                               value:"1 common"},
+      {name:"Cape Verde",                             value:"1 common"},
+      {name:"Grenada",                                value:"1 common"},
+      {name:"Guinea",                                 value:"1 common"},
+      {name:"Palau",                                  value:"1 common"},
+      {name:"Solomon Islands",                        value:"1 common"},
+      {name:"St. Vincent and the Grenadines",         value:"1 common"},
+      {name:"Vanuatu",                                value:"1 common"},
+      {name:"Principality of Moldavia",               value:"1 common"},
+      {name:"Qajar Dynasty",                          value:"1 common"},
+      {name:"Antigua and Barbuda",                    value:"1 common"},
+      {name:"Benin",                                  value:"1 common"},
+      {name:"Bhutan",                                 value:"1 common"},
+      {name:"Burkina Faso",                           value:"1 common"},
+      {name:"Burundi",                                value:"1 common"},
+      {name:"Central African Republic",               value:"1 common"},
+      {name:"Comoros",                                value:"1 common"},
+      {name:"El Salvador",                            value:"1 common"},
+      {name:"Gabon",                                  value:"1 common"},
+      {name:"Hejaz",                                  value:"1 common"},
+      {name:"Iceland",                                value:"1 common"},
+      {name:"Kiribati",                               value:"1 common"},
+      {name:"Kosovo",                                 value:"1 common"},
+      {name:"Liberia",                                value:"1 common"},
+      {name:"Lesotho",                                value:"1 common"},
+      {name:"Luxembourg",                             value:"1 common"},
+      {name:"Madagascar",                             value:"1 common"},
+      {name:"Majapahit",                              value:"1 common"},
+      {name:"Mauritania",                             value:"1 common"},
+      {name:"Mauritius",                              value:"1 common"},
+      {name:"Montenegro",                             value:"1 common"},
+      {name:"Namibia",                                value:"1 common"},
+      {name:"Nanda Empire",                           value:"1 common"},
+      {name:"North Macedonia",                        value:"1 common"},
+      {name:"Panama",                                 value:"1 common"},
+      {name:"Papua New Guinea",                       value:"1 common"},
+      {name:"Paris Commune",                          value:"1 common"},
+      {name:"Rwanda",                                 value:"1 common"},
+      {name:"Senegal",                                value:"1 common"},
+      {name:"Sierra Leone",                           value:"1 common"},
+      {name:"Somalia",                                value:"1 common"},
+      {name:"Suriname",                               value:"1 common"},
+      {name:"Timor-Leste",                            value:"1 common"},
+      {name:"Dahomey",                                value:"1 common"},
+      {name:"Djibouti",                               value:"1 common"},
+    ];
+
+    const SPECIALS_VALUES = [
+      {name:"Spookys",    emoji:"🎃", value:"15–50 T1s/common",   demand:"Bad"},
+      {name:"Xmas 22",    emoji:"❄️", value:"1–2 T1s/common",     demand:"Terrible"},
+      {name:"Easters",    emoji:"🥚", value:"0.1–0.25 T1s/common",demand:"Good"},
+      {name:"Summers",    emoji:"☀️", value:"0.1–0.15 T1s/common",demand:"Good"},
+      {name:"Cakes",      emoji:"🎉", value:"10–15 T1s/common",   demand:"Mid"},
+      {name:"Ghosts",     emoji:"👻", value:"0.3–0.5 T1s/common", demand:"Good"},
+      {name:"Gobbles",    emoji:"🦃", value:"0.1–0.2 T1s/common", demand:"Good"},
+      {name:"Trees",      emoji:"🎄", value:"0.1–0.2 T1s/common", demand:"Good"},
+      {name:"LNYs",       emoji:"🧧", value:"2–3.5 T1s/common",   demand:"Good"},
+      {name:"Bats",       emoji:"🦇", value:"0.4–1 T1s/common",   demand:"Good"},
+      {name:"Gifts",      emoji:"🎁", value:"0.3–0.5 T1s/common", demand:"Mid"},
+      {name:"NYs 2025",   emoji:"🎆", value:"1–1.5 T1s/common",   demand:"Mid"},
+      {name:"Clovers",    emoji:"🍀", value:"200–300 T1s/common", demand:"Great"},
+      {name:"Springs",    emoji:"🌸", value:"1 T30/common",        demand:"Good"},
+      {name:"Comets",     emoji:"☄️", value:"50–100 T1s/common",  demand:"Good"},
+      {name:"Candles",    emoji:"🕯️", value:"0.1–0.2 T1s/common", demand:"Mid"},
+      {name:"Mardi Gras", emoji:"🎭", value:"5–10 T1s/common",    demand:"Mid"},
+      {name:"Rockets",    emoji:"🚀", value:"~1 T1/common",        demand:"Good"},
+      {name:"Shinys",     emoji:"✨", value:"1.5–3 T1s/common",   demand:"Great"},
+      {name:"Mythicals",  emoji:"🌌", value:"8–10 T1s/common",    demand:"Good"},
+      {name:"Prides",     emoji:"🏳️‍🌈",value:"0.1–0.2 T1s/common", demand:"Mid"},
+    ];
+
+    function scoreMatch(query, name) {
+      const q = query.toLowerCase().trim();
+      const n = name.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
+      if (!q) return -1;
+      if (n === q) return 100;
+      if (n.startsWith(q)) return 80;
+      if (n.includes(q)) return 60;
+      const qTokens = q.split(/\s+/).filter(Boolean);
+      const hits = qTokens.filter(t => n.includes(t));
+      if (hits.length === qTokens.length) return 40;
+      if (hits.length > 0) return 20 * (hits.length / qTokens.length);
+      return -1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
        BALL IMAGE DATA
     ═══════════════════════════════════════════════════════════════ */
     const BALL_IMAGE_MAP = {
@@ -1777,6 +2173,91 @@
       );
     }
 
+    function ValueModal({ onClose }) {
+      const [q, setQ] = useState('');
+      const [tab, setTab] = useState('all'); // 'all' | 'normals' | 'specials'
+
+      const results = useMemo(() => {
+        const lq = q.trim().toLowerCase();
+        let normals = TRADE_VALUES.map(b => ({ ...b, kind: 'normal', score: lq ? scoreMatch(lq, b.name) : 50 })).filter(b => b.score >= 0);
+        let specials = SPECIALS_VALUES.map(b => ({ ...b, kind: 'special', score: lq ? scoreMatch(lq, b.name) : 50 })).filter(b => b.score >= 0);
+        if (tab === 'normals') return normals.sort((a,b) => b.score - a.score);
+        if (tab === 'specials') return specials.sort((a,b) => b.score - a.score);
+        return [...normals, ...specials].sort((a,b) => b.score - a.score);
+      }, [q, tab]);
+
+      function valueColor(v, kind) {
+        if (kind === 'special') return { bg:'rgba(16,185,129,.12)', border:'rgba(16,185,129,.35)', color:'#6ee7b7' };
+        if (v.includes('T1'))  return { bg:'rgba(245,158,11,.12)',  border:'rgba(245,158,11,.35)',  color:'#fcd34d' };
+        const n = parseFloat(v);
+        if (n >= 5)  return { bg:'rgba(99,102,241,.12)',  border:'rgba(99,102,241,.35)',  color:'#a5b4fc' };
+        if (n >= 2)  return { bg:'rgba(59,130,246,.12)',  border:'rgba(59,130,246,.35)',  color:'#93c5fd' };
+        return       { bg:'rgba(100,116,139,.12)', border:'rgba(100,116,139,.35)', color:'#94a3b8' };
+      }
+
+      const demandColor = { Great:'text-emerald-400', Good:'text-blue-400', Mid:'text-amber-400', Terrible:'text-red-400', Bad:'text-orange-400' };
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6"
+             style={{background:'rgba(0,0,0,.82)',backdropFilter:'blur(10px)'}}
+             onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="glass2 rounded-2xl rounded-b-none sm:rounded-2xl w-full sm:max-w-lg flex flex-col anim-slide-up" style={{maxHeight:'82vh'}}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'var(--border)'}}>
+              <div>
+                <h2 className="font-semibold text-white text-sm">Trade Value Lookup</h2>
+                <p className="text-xs mt-0.5 text-slate-600">Nile's List · May 2026 · {results.length} results</p>
+              </div>
+              <button onClick={onClose} className="btn px-3 py-1.5 text-slate-400 hover:text-white text-sm" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>✕</button>
+            </div>
+            {/* Search + tabs */}
+            <div className="px-4 py-3 border-b space-y-2" style={{borderColor:'var(--border)'}}>
+              <input className="inp text-sm" placeholder="Type any ball name…" value={q} onChange={e=>setQ(e.target.value)} autoFocus />
+              <div className="flex gap-1">
+                {[['all','All'],['normals','Normal Balls'],['specials','Special Balls']].map(([v,lbl]) => (
+                  <button key={v} onClick={()=>setTab(v)}
+                          className="btn px-3 py-1 text-xs"
+                          style={{background:tab===v?'var(--indigo-dim)':'var(--s2)',
+                                  border:`1px solid ${tab===v?'rgba(99,102,241,.4)':'var(--border)'}`,
+                                  color:tab===v?'#818cf8':'var(--fg2)'}}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Results */}
+            <div className="overflow-y-auto flex-1 p-2">
+              {results.map((b, i) => {
+                const vc = valueColor(b.value, b.kind);
+                return (
+                  <div key={b.kind+b.name+i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors">
+                    {b.kind === 'special'
+                      ? <span className="text-lg w-7 text-center flex-shrink-0">{b.emoji}</span>
+                      : <span className="font-mono text-xs w-7 text-center text-slate-600 flex-shrink-0">⚽</span>
+                    }
+                    <span className="flex-1 text-sm text-white font-medium">{b.name}</span>
+                    {b.kind === 'special' && b.demand && (
+                      <span className={`text-xs font-medium ${demandColor[b.demand] || 'text-slate-500'}`}>{b.demand}</span>
+                    )}
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border flex-shrink-0"
+                          style={{background:vc.bg, borderColor:vc.border, color:vc.color}}>
+                      {b.value}
+                    </span>
+                  </div>
+                );
+              })}
+              {results.length === 0 && (
+                <div className="text-center py-12 text-slate-600 text-sm">No match for "{q}"</div>
+              )}
+            </div>
+            <div className="px-4 py-3 border-t text-center" style={{borderColor:'var(--border)'}}>
+              <p className="text-xs text-slate-700">Community poll data — values fluctuate with demand</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function SyncModal({ onClose, onSync }) {
       const [val, setVal] = useState('');
       const [err, setErr] = useState('');
@@ -2274,7 +2755,7 @@
       const [sentSize,    setSentSize]    = useState(() => saved.sentSize     || 'medium');
       const [sentInterval,setSentInterval]= useState(() => saved.sentInterval || 60);
       const [sound,       setSound]       = useState(() => saved.sound !== false);
-      const [notifs,      setNotifs]      = useState(false);
+      const [notifs,      setNotifs]      = useState(() => saved.notifs === true && typeof Notification !== 'undefined' && Notification.permission === 'granted');
 
       const [sentence,    setSentence]    = useState('');
       const [command,     setCommand]     = useState('');
@@ -2283,6 +2764,7 @@
       const [showBalls,      setShowBalls]      = useState(false);
       const [showSync,       setShowSync]       = useState(false);
       const [showIdentifier, setShowIdentifier] = useState(false);
+      const [showValue,      setShowValue]      = useState(false);
       const [toast,          setToast]          = useState(null); // {msg, type, key}
       const [notifOk,     setNotifOk]     = useState(typeof Notification !== 'undefined');
       const [swStatus,    setSwStatus]    = useState('unknown'); // 'unknown'|'active'|'unavailable'
@@ -2323,10 +2805,10 @@
             setSwStatus('active');
             // Controller may not exist yet on first install — wait for it
             if (navigator.serviceWorker.controller) {
-              navigator.serviceWorker.controller.postMessage({ type: 'SYNC', lastCatch });
+              navigator.serviceWorker.controller.postMessage({ type: 'SYNC', lastCatch, sentInterval: sentIntervalR.current, lastSent: lastSentR.current });
             } else {
               navigator.serviceWorker.addEventListener('controllerchange', () => {
-                navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch });
+                navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch, sentInterval: sentIntervalR.current, lastSent: lastSentR.current });
               }, { once: true });
             }
           })
@@ -2336,7 +2818,7 @@
       // ── Keep SW in sync when lastCatch changes ───────────────────
       useEffect(() => {
         if (swStatus === 'active') {
-          navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch });
+          navigator.serviceWorker.controller?.postMessage({ type: 'SYNC', lastCatch, sentInterval: sentIntervalR.current, lastSent: lastSentR.current });
         }
       }, [lastCatch, swStatus]);
 
@@ -2348,7 +2830,7 @@
           const ctrl = navigator.serviceWorker.controller;
           if (!ctrl) return;
           if (document.hidden) {
-            ctrl.postMessage({ type: 'SYNC', lastCatch });
+            ctrl.postMessage({ type: 'SYNC', lastCatch, sentInterval: sentIntervalR.current, lastSent: lastSentR.current });
           } else {
             ctrl.postMessage({ type: 'STOP' });
           }
@@ -2359,8 +2841,8 @@
 
       // ── Persist ─────────────────────────────────────────────────
       useEffect(() => {
-        try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sentInterval, sound })); } catch(_) {}
-      }, [lastCatch, serverName, memberCount, sentSize, sound]);
+        try { localStorage.setItem(LS_KEY, JSON.stringify({ lastCatch, serverName, memberCount, sentSize, sentInterval, sound, notifs })); } catch(_) {}
+      }, [lastCatch, serverName, memberCount, sentSize, sentInterval, sound, notifs]);
       useEffect(() => {
         try { localStorage.setItem(LS_COLLECTION, JSON.stringify(collection)); } catch(_) {}
       }, [collection]);
@@ -2514,6 +2996,8 @@
               </span>
               <button onClick={()=>setShowBalls(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
                       style={{background:'var(--s2)',border:'1px solid var(--border)'}}>📖</button>
+              <button onClick={()=>setShowValue(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
+                      style={{background:'var(--s2)',border:'1px solid var(--border)'}}>💰</button>
               <button onClick={()=>setShowIdentifier(true)} className="btn px-3 py-1.5 text-xs text-slate-500 hover:text-white"
                       style={{background:'var(--s2)',border:'1px solid var(--border)'}}>🔍</button>
               <button onClick={()=>setStandby(!standby)}
@@ -2697,6 +3181,7 @@
                                                  return next;
                                                })} />}
           {showSync       && <SyncModal          onClose={()=>setShowSync(false)} onSync={sync} />}
+          {showValue      && <ValueModal         onClose={()=>setShowValue(false)} />}
           {showIdentifier && <IdentifierModal    onClose={()=>setShowIdentifier(false)}
                                                onIdentify={name => { lastIdentifiedNameR.current = name; }} />}
         </div>
