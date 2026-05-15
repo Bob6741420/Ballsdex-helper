@@ -439,34 +439,34 @@
       // ── Mythical ────────────────────────────────────────────────
       {tier:1,  name:"British Empire",                      rarity:"Mythical"},
       {tier:1,  name:"Reichtangle",                         rarity:"Mythical"},
-      {tier:1,  name:"Russian Empire",                      rarity:"Mythical"},
-      {tier:4,  name:"Mongol Empire",                       rarity:"Mythical"},
-      {tier:5,  name:"Kalmar Union",                        rarity:"Mythical"},
+      {tier:3,  name:"Mongol Empire",                       rarity:"Mythical"},
+      {tier:3,  name:"Russian Empire",                      rarity:"Mythical"},
       {tier:5,  name:"Roman Empire",                        rarity:"Mythical"},
-      {tier:7,  name:"Papal States",                        rarity:"Mythical"},
-      {tier:7,  name:"Polish-Lithuanian Commonwealth",      rarity:"Mythical"},
-      {tier:9,  name:"Qin Dynasty",                         rarity:"Mythical"},
-      {tier:10, name:"German Empire",                       rarity:"Mythical"},
+      {tier:6,  name:"Han Dynasty",                         rarity:"Mythical"},
+      {tier:6,  name:"Qin Dynasty",                         rarity:"Mythical"},
+      {tier:6,  name:"United States",                       rarity:"Mythical"},
+      {tier:9,  name:"Polish-Lithuanian Commonwealth",      rarity:"Mythical"},
+      {tier:9,  name:"Soviet Union",                        rarity:"Mythical"},
       // ── Legendary ───────────────────────────────────────────────
-      {tier:11, name:"Han Dynasty",                         rarity:"Legendary"},
-      {tier:12, name:"Holy Roman Empire",                   rarity:"Legendary"},
-      {tier:13, name:"Akkadian Empire",                     rarity:"Legendary"},
-      {tier:14, name:"Austria-Hungary",                     rarity:"Legendary"},
-      {tier:14, name:"Hunnic Empire",                       rarity:"Legendary"},
-      {tier:14, name:"Japanese Empire",                     rarity:"Legendary"},
-      {tier:14, name:"Republic of China",                   rarity:"Legendary"},
-      {tier:14, name:"Soviet Union",                        rarity:"Legendary"},
+      {tier:11, name:"Austria-Hungary",                     rarity:"Legendary"},
+      {tier:11, name:"Holy Roman Empire",                   rarity:"Legendary"},
+      {tier:11, name:"Japanese Empire",                     rarity:"Legendary"},
+      {tier:14, name:"Akkadian Empire",                     rarity:"Legendary"},
+      {tier:14, name:"Kalmar Union",                        rarity:"Legendary"},
       {tier:14, name:"Tokugawa Shogunate",                  rarity:"Legendary"},
-      {tier:14, name:"United States",                       rarity:"Legendary"},
-      {tier:21, name:"Vatican",                             rarity:"Legendary"},
-      {tier:22, name:"Republic of Texas",                   rarity:"Legendary"},
+      {tier:17, name:"Hunnic Empire",                       rarity:"Legendary"},
+      {tier:18, name:"Papal States",                        rarity:"Legendary"},
+      {tier:18, name:"Republic of China",                   rarity:"Legendary"},
+      {tier:20, name:"German Empire",                       rarity:"Legendary"},
+      {tier:20, name:"Gupta Empire",                        rarity:"Legendary"},
+      {tier:22, name:"Vatican",                             rarity:"Legendary"},
+      {tier:23, name:"China",                               rarity:"Legendary"},
       {tier:23, name:"Russia",                              rarity:"Legendary"},
-      {tier:24, name:"Gupta Empire",                        rarity:"Legendary"},
-      {tier:25, name:"China",                               rarity:"Legendary"},
-      {tier:26, name:"Austrian Empire",                     rarity:"Legendary"},
-      {tier:26, name:"Joseon",                              rarity:"Legendary"},
+      {tier:25, name:"Austrian Empire",                     rarity:"Legendary"},
+      {tier:25, name:"Joseon",                              rarity:"Legendary"},
+      {tier:25, name:"Republic of Texas",                   rarity:"Legendary"},
       {tier:28, name:"Ancient Troy",                        rarity:"Legendary"},
-      {tier:29, name:"India",                               rarity:"Legendary"},
+      {tier:28, name:"India",                               rarity:"Legendary"},
       {tier:30, name:"Ancient Greece",                      rarity:"Legendary"},
       {tier:30, name:"Japan",                               rarity:"Legendary"},
       {tier:30, name:"Korea",                               rarity:"Legendary"},
@@ -808,28 +808,28 @@
     const TRADE_VALUES = [
       {name:"British Empire",                         value:"1 T1"},
       {name:"Reichtangle",                            value:"1 T1"},
-      {name:"Russian Empire",                         value:"1 T1"},
+      {name:"Russian Empire",                         value:"0.8 T1s"},
       {name:"Mongol Empire",                          value:"0.8 T1s"},
-      {name:"Kalmar Union",                           value:"0.5 T1s"},
-      {name:"Roman Empire",                           value:"0.5 T1s"},
-      {name:"Papal States",                           value:"0.4 T1s"},
+      {name:"Roman Empire",                           value:"0.75 T1s"},
+      {name:"Han Dynasty",                            value:"0.5 T1s"},
+      {name:"Qin Dynasty",                            value:"0.5 T1s"},
+      {name:"United States",                          value:"0.5 T1s"},
       {name:"Polish-Lithuanian Commonwealth",         value:"0.4 T1s"},
-      {name:"Qin Dynasty",                            value:"0.3 T1s"},
-      {name:"German Empire",                          value:"0.2 T1s"},
-      {name:"Han Dynasty",                            value:"0.2 T1s"},
-      {name:"Holy Roman Empire",                      value:"0.15 T1s"},
-      {name:"Akkadian Empire",                        value:"0.15 T1s"},
-      {name:"Austria-Hungary",                        value:"0.1 T1s"},
-      {name:"Hunnic Empire",                          value:"0.1 T1s"},
-      {name:"Japanese Empire",                        value:"0.1 T1s"},
+      {name:"Soviet Union",                           value:"0.4 T1s"},
+      {name:"Austria-Hungary",                        value:"0.25 T1s"},
+      {name:"Holy Roman Empire",                      value:"0.25 T1s"},
+      {name:"Japanese Empire",                        value:"0.25 T1s"},
+      {name:"Akkadian Empire",                        value:"0.2 T1s"},
+      {name:"Kalmar Union",                           value:"0.2 T1s"},
+      {name:"Tokugawa Shogunate",                     value:"0.2 T1s"},
+      {name:"Hunnic Empire",                          value:"0.15 T1s"},
+      {name:"Papal States",                           value:"0.1 T1s"},
       {name:"Republic of China",                      value:"0.1 T1s"},
-      {name:"Soviet Union",                           value:"0.1 T1s"},
-      {name:"Tokugawa Shogunate",                     value:"0.1 T1s"},
-      {name:"United States",                          value:"0.1 T1s"},
-      {name:"Vatican",                                value:"0.05 T1s"},
+      {name:"German Empire",                          value:"0.1 T1s"},
+      {name:"Gupta Empire",                           value:"0.1 T1s"},
+      {name:"Vatican",                                value:"0.1 T1s"},
       {name:"Republic of Texas",                      value:"0.05 T1s"},
       {name:"Russia",                                 value:"0.05 T1s"},
-      {name:"Gupta Empire",                           value:"0.05 T1s"},
       {name:"China",                                  value:"0.05 T1s"},
       {name:"Austrian Empire",                        value:"0.05 T1s"},
       {name:"Joseon",                                 value:"0.05 T1s"},
@@ -2734,17 +2734,13 @@
       const [q, setQ] = useState('');
       const [tab, setTab] = useState('balls');
 
-      function spawnRate(tier) {
-        const pct = tier * 0.03;
-        return pct < 0.1 ? pct.toFixed(3) + '%' : pct < 1 ? pct.toFixed(2) + '%' : pct.toFixed(1) + '%';
-      }
-
-      function rateColor(tier) {
-        if (tier <= 10)  return {color:'#c4b5fd', bg:'rgba(167,139,250,.15)', border:'rgba(167,139,250,.4)'};
-        if (tier <= 30)  return {color:'#fcd34d', bg:'rgba(245,158,11,.12)',  border:'rgba(245,158,11,.35)'};
-        if (tier <= 130) return {color:'#a5b4fc', bg:'rgba(99,102,241,.12)',  border:'rgba(99,102,241,.35)'};
-        if (tier <= 212) return {color:'#93c5fd', bg:'rgba(59,130,246,.12)',  border:'rgba(59,130,246,.35)'};
-        return               {color:'#6ee7b7', bg:'rgba(16,185,129,.12)',  border:'rgba(16,185,129,.35)'};
+      function rarityColor(rarity) {
+        if (rarity === 'Mythical')  return {color:'#c4b5fd', bg:'rgba(167,139,250,.15)', border:'rgba(167,139,250,.4)'};
+        if (rarity === 'Legendary') return {color:'#fcd34d', bg:'rgba(245,158,11,.12)',  border:'rgba(245,158,11,.35)'};
+        if (rarity === 'Epic')      return {color:'#a5b4fc', bg:'rgba(99,102,241,.12)',  border:'rgba(99,102,241,.35)'};
+        if (rarity === 'Rare')      return {color:'#93c5fd', bg:'rgba(59,130,246,.12)',  border:'rgba(59,130,246,.35)'};
+        if (rarity === 'Uncommon')  return {color:'#86efac', bg:'rgba(74,222,128,.10)',  border:'rgba(74,222,128,.30)'};
+        return                             {color:'#6ee7b7', bg:'rgba(16,185,129,.12)',  border:'rgba(16,185,129,.35)'};
       }
 
       const ballResults = useMemo(() => {
@@ -2787,15 +2783,14 @@
 
               {/* Per Ball */}
               {tab === 'balls' && ballResults.map(b => {
-                const rc = rateColor(b.tier);
+                const rc = rarityColor(b.rarity);
                 return (
                   <div key={b.name} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5">
                     <span className="text-xs text-slate-600 w-10 flex-shrink-0 font-mono">T{b.tier}</span>
                     <span className="flex-1 text-xs text-white font-medium truncate">{b.name}</span>
-                    <span className="text-xs text-slate-500 mr-1 flex-shrink-0">{b.rarity}</span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-lg border flex-shrink-0"
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg border flex-shrink-0"
                           style={{background:rc.bg, borderColor:rc.border, color:rc.color}}>
-                      {spawnRate(b.tier)}
+                      {b.rarity}
                     </span>
                   </div>
                 );
