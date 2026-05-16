@@ -3134,6 +3134,13 @@
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <p className="text-xs text-slate-500">{ownedCount} / {BALLS.length} owned</p>
+                {collList.some(b => !collection[b.name]) && (
+                  <button onClick={()=>setCollection(prev => { const next={...prev}; collList.forEach(b=>{ next[b.name]=true; }); return next; })}
+                          className="btn px-2 py-0.5 text-xs"
+                          style={{background:'var(--emerald-dim)',border:'1px solid rgba(16,185,129,.4)',color:'#34d399'}}>
+                    Check all
+                  </button>
+                )}
                 {ownedCount > 0 && (
                   <button onClick={()=>setCollection({})}
                           className="btn px-2 py-0.5 text-xs"
