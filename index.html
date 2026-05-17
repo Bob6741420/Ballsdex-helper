@@ -2555,9 +2555,10 @@
       // Explicit aliases that acronym/substring matching can't reliably catch
       const BALL_ALIASES = {
         'usa':'United States of America','ussr':'Soviet Union','drc':'DR Congo',
-        'prc':'China','plc':'Polish-Lithuanian Commonwealth','ah':'Austria-Hungary',
+        'prc':'China','roc':'Republic of China','plc':'Polish-Lithuanian Commonwealth','ah':'Austria-Hungary',
         'uk':'United Kingdom','nz':'New Zealand','sa':'South Africa','uae':'United Arab Emirates',
         'sk':'South Korea','nk':'North Korea','ger':'German Empire','haps':'Habsburg Empire',
+        'je':'Japanese Empire','hre':'Holy Roman Empire','ott':'Ottoman Empire',
       };
 
       function expandInput(s) {
@@ -2581,22 +2582,27 @@
           var lineKey = line.toLowerCase().replace(/[^a-z]/g, '');
           var expanded = BALL_ALIASES[lineKey] || expandInput(line);
 
-          // Primary: scoreMatch (handles prefixes, substrings, abbreviation expansions)
-          var bestRow = null, bestScore = -1;
+          // scoreMatch: exact(100) > prefix(80) > substring(60) > token(40/20)
+          var smScore = -1, smRow = null;
           for (var ki = 0; ki < BALL_SPECIALS.length; ki++) {
             var sc = scoreMatch(expanded, BALL_SPECIALS[ki][0]);
-            if (sc > bestScore) { bestScore = sc; bestRow = BALL_SPECIALS[ki]; }
+            if (sc > smScore) { smScore = sc; smRow = BALL_SPECIALS[ki]; }
           }
 
-          // Acronym match: "je"→Japanese Empire, "roc"→Republic of China, "ukosn"→United Kingdoms of Sweden & Norway
-          // Runs when bestScore < 70 so it overrides false substring hits (e.g. "roc" in "Morocco" scores 60)
-          if (bestScore < 70) {
-            var qAcr = expanded.toLowerCase().replace(/[^a-z]/g, '');
+          // Acronym match runs independently — score 70 beats substring(60) but loses to prefix/exact(80+)
+          // This ensures "roc"→Republic of China beats "roc" substring hit in "Morocco"
+          var acrScore = -1, acrRow = null;
+          var qAcr = expanded.toLowerCase().replace(/[^a-z]/g, '');
+          if (qAcr.length >= 2) {
             for (var kai = 0; kai < BALL_SPECIALS.length; kai++) {
               var acr = BALL_SPECIALS[kai][0].toLowerCase().split(/\s+/).map(function(w){ return /[a-z]/.test(w[0]) ? w[0] : ''; }).join('');
-              if (acr === qAcr) { bestScore = 70; bestRow = BALL_SPECIALS[kai]; break; }
+              if (acr === qAcr) { acrScore = 70; acrRow = BALL_SPECIALS[kai]; break; }
             }
           }
+
+          // Take whichever scored higher
+          var bestScore = smScore, bestRow = smRow;
+          if (acrScore > bestScore) { bestScore = acrScore; bestRow = acrRow; }
 
           // Fallback: word-level Levenshtein for typos ("lenister"→Leinster, "aremenian"→Armenian)
           if (bestScore < 0) {
