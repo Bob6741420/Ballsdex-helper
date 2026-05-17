@@ -2572,6 +2572,15 @@
             if (sc > bestScore) { bestScore = sc; bestRow = BALL_SPECIALS[ki]; }
           }
 
+          // Acronym match: "ukosn" → "United Kingdoms of Sweden & Norway"
+          if (bestScore < 0) {
+            var qAcr = expanded.toLowerCase().replace(/[^a-z]/g, '');
+            for (var kai = 0; kai < BALL_SPECIALS.length; kai++) {
+              var acr = BALL_SPECIALS[kai][0].toLowerCase().split(/\s+/).map(function(w){ return /[a-z]/.test(w[0]) ? w[0] : ''; }).join('');
+              if (acr === qAcr) { bestScore = 70; bestRow = BALL_SPECIALS[kai]; break; }
+            }
+          }
+
           // Fallback: word-level Levenshtein for typos ("lenister"→Leinster, "aremenian"→Armenian)
           if (bestScore < 0) {
             var qWords = expanded.toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).filter(function(w){ return w.length >= 3; });
@@ -2731,30 +2740,33 @@
           </div>
 
           {preview.length > 0 && (
-            <div className="rounded-xl p-3" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
-              <p className="text-xs font-semibold text-white mb-2">Total — {preview.length} ball{preview.length!==1?'s':''}</p>
-              {normalSum > 0 && (
-                <div className="mb-2">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border"
-                        style={{background:'rgba(245,158,11,.12)',borderColor:'rgba(245,158,11,.35)',color:'#fcd34d'}}>
-                    {+normalSum.toPrecision(3)} T1s
-                  </span>
+            <div className="rounded-xl p-3 space-y-3" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
+              <div>
+                <p className="text-xs text-slate-500 mb-1">{preview.length} ball{preview.length!==1?'s':''} · combined value</p>
+                <span className="text-lg font-bold px-3 py-1 rounded-lg border"
+                      style={{background:'rgba(245,158,11,.15)',borderColor:'rgba(245,158,11,.5)',color:'#fcd34d'}}>
+                  {+normalSum.toPrecision(4)} T1s
+                </span>
+              </div>
+              {totalChips.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-600 mb-1.5">Special event totals</p>
+                  <div className="flex flex-wrap gap-2">
+                    {totalChips.map(function(t) {
+                      var vc = specialChipColor(String(t.sum));
+                      return (
+                        <div key={t.key} className="flex flex-col items-center gap-0.5">
+                          <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
+                                style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
+                            {t.label}: {+t.sum.toPrecision(4)}
+                          </span>
+                          <span className="text-xs text-slate-600">{t.count}/{preview.length}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <div className="flex flex-wrap gap-2">
-                {totalChips.map(function(t) {
-                  var vc = specialChipColor(String(t.sum));
-                  return (
-                    <div key={t.key} className="flex flex-col items-center gap-0.5">
-                      <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
-                            style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
-                        {t.label}: {+t.sum.toPrecision(4)}
-                      </span>
-                      <span className="text-xs text-slate-600">{t.count}/{preview.length}</span>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
         </div>
