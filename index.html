@@ -2550,7 +2550,7 @@
       const [preview, setPreview] = useState(null); // null | [{name, row}]
       const [addQ, setAddQ] = useState('');
 
-      const CALC_ABBR = {'ko':'kingdom of','e':'empire','r':'republic of','d':'dynasty','k':'kingdom','u':'union','c':'confederation'};
+      const CALC_ABBR = {'ko':'kingdom of','e':'empire','r':'republic of','ro':'republic of','d':'dynasty','k':'kingdom','u':'union','c':'confederation'};
 
       function expandInput(s) {
         return s.replace(/\b([a-z]+)\b/gi, function(w){ return CALC_ABBR[w.toLowerCase()] || w; });
@@ -2559,16 +2559,43 @@
       function doMatch() {
         var rows = [];
         var seen = {};
-        var lines = text.split('\n');
-        for (var li = 0; li < lines.length; li++) {
-          var line = lines[li].trim();
+        var parts = text.split(/[\n,;]+/);
+        for (var li = 0; li < parts.length; li++) {
+          var line = parts[li].trim();
           if (!line) continue;
           var expanded = expandInput(line);
+
+          // Primary: scoreMatch (handles prefixes, substrings, abbreviation expansions)
           var bestRow = null, bestScore = -1;
           for (var ki = 0; ki < BALL_SPECIALS.length; ki++) {
             var sc = scoreMatch(expanded, BALL_SPECIALS[ki][0]);
             if (sc > bestScore) { bestScore = sc; bestRow = BALL_SPECIALS[ki]; }
           }
+
+          // Fallback: word-level Levenshtein for typos ("lenister"→Leinster, "aremenian"→Armenian)
+          if (bestScore < 0) {
+            var qWords = expanded.toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).filter(function(w){ return w.length >= 3; });
+            if (qWords.length > 0) {
+              var maxAllowed = 0;
+              for (var wi0 = 0; wi0 < qWords.length; wi0++) maxAllowed += Math.max(2, Math.floor(qWords[wi0].length * 0.35));
+              var bestDist = Infinity;
+              for (var ki2 = 0; ki2 < BALL_SPECIALS.length; ki2++) {
+                var bwords = BALL_SPECIALS[ki2][0].toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).filter(function(w){ return w.length >= 2; });
+                var totalDist = 0;
+                for (var wi = 0; wi < qWords.length; wi++) {
+                  var minD = Infinity;
+                  for (var bwi = 0; bwi < bwords.length; bwi++) {
+                    var d = levenshtein(qWords[wi], bwords[bwi]);
+                    if (d < minD) minD = d;
+                  }
+                  totalDist += minD;
+                }
+                if (totalDist < bestDist) { bestDist = totalDist; bestRow = BALL_SPECIALS[ki2]; }
+              }
+              if (bestDist <= maxAllowed) bestScore = 0; else bestRow = null;
+            }
+          }
+
           if (bestScore >= 0 && bestRow && !seen[bestRow[0]]) {
             seen[bestRow[0]] = true;
             rows.push({name: bestRow[0], row: bestRow});
@@ -2607,9 +2634,9 @@
       if (preview === null) {
         return (
           <div className="p-3 space-y-3">
-            <p className="text-xs text-slate-600">Paste ball names — any format, abbreviations ok (e.g. "brit e", "ko scotland").</p>
+            <p className="text-xs text-slate-600">One ball per line or comma-separated. Abbreviations: ko=kingdom of, e=empire, r/ro=republic of, k=kingdom, d=dynasty, u=union.</p>
             <textarea className="inp w-full text-sm resize-none" rows={6}
-              placeholder={"Roman Empire, British Empire\nko scotland; soviet u\nbrit e, mongol e"}
+              placeholder={"papal, brit e, ko scotland\nroman e, mongol e\ntoku, ro venice, olmecs"}
               value={text} onChange={function(e){ setText(e.target.value); }}
               style={{fontFamily:'inherit'}} />
             <button onClick={doMatch} className="btn w-full py-2 text-xs font-semibold"
