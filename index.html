@@ -2537,115 +2537,125 @@
     }
 
     function CalculatorTab() {
-      const [inputText, setInputText] = useState('');
-      const [phase, setPhase] = useState('input');
-      const [balls, setBalls] = useState([]); // [{name, row}]
+      const [text, setText] = useState('');
+      const [preview, setPreview] = useState(null); // null | [{name, row}]
       const [addQ, setAddQ] = useState('');
-      const [dropOpen, setDropOpen] = useState(false);
 
-      const CALC_ABBR = {ko:'kingdom of',e:'empire',r:'republic of',d:'dynasty',k:'kingdom',u:'union',c:'confederation',emp:'empire',rep:'republic'};
+      const CALC_ABBR = {'ko':'kingdom of','e':'empire','r':'republic of','d':'dynasty','k':'kingdom','u':'union','c':'confederation'};
 
-      function runMatch() {
-        const expanded = inputText.replace(/\b([a-zA-Z]+)\b/g, w => CALC_ABBR[w.toLowerCase()] || w);
-        const ballNames = BALL_SPECIALS.map(r => r[0]);
-        const { matched } = matchBalls(expanded, ballNames);
-        const rows = matched.map(name => {
-          const row = BALL_SPECIALS.find(r => r[0] === name);
-          return row ? { name, row } : null;
-        }).filter(Boolean);
-        setBalls(rows);
-        setPhase('results');
+      function expandInput(s) {
+        return s.replace(/\b([a-z]+)\b/gi, function(w){ return CALC_ABBR[w.toLowerCase()] || w; });
+      }
+
+      function doMatch() {
+        var expanded = expandInput(text);
+        var names = [];
+        for (var i = 0; i < BALL_SPECIALS.length; i++) names.push(BALL_SPECIALS[i][0]);
+        var result = matchBalls(expanded, names);
+        var rows = [];
+        for (var j = 0; j < result.matched.length; j++) {
+          var name = result.matched[j];
+          var row = null;
+          for (var k = 0; k < BALL_SPECIALS.length; k++) {
+            if (BALL_SPECIALS[k][0] === name) { row = BALL_SPECIALS[k]; break; }
+          }
+          if (row) rows.push({name: name, row: row});
+        }
+        setPreview(rows);
+        setAddQ('');
       }
 
       function addBall(name) {
-        if (balls.some(b => b.name === name)) return;
-        const row = BALL_SPECIALS.find(r => r[0] === name);
-        if (row) setBalls(prev => [...prev, { name, row }]);
-        setAddQ(''); setDropOpen(false);
+        for (var i = 0; i < preview.length; i++) { if (preview[i].name === name) return; }
+        var row = null;
+        for (var k = 0; k < BALL_SPECIALS.length; k++) {
+          if (BALL_SPECIALS[k][0] === name) { row = BALL_SPECIALS[k]; break; }
+        }
+        if (row) setPreview(preview.concat([{name: name, row: row}]));
+        setAddQ('');
       }
 
       function removeBall(name) {
-        setBalls(prev => prev.filter(b => b.name !== name));
+        setPreview(preview.filter(function(b){ return b.name !== name; }));
       }
 
-      const addResults = useMemo(() => {
-        if (!addQ.trim()) return [];
-        const lq = addQ.trim().toLowerCase();
-        return BALL_SPECIALS
-          .map(row => ({ name: row[0], score: scoreMatch(lq, row[0]) }))
-          .filter(r => r.score >= 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 8);
-      }, [addQ]);
-
-      const totals = useMemo(() => {
-        const sums = {};
-        for (const { row } of balls) {
-          SPECIAL_KEYS.forEach((key, i) => {
-            const val = row[i + 1];
-            if (val === null) return;
-            if (!sums[key]) sums[key] = { key, label: SPECIAL_LABELS[key], sum: 0, count: 0 };
-            sums[key].sum += parseFloat(val);
-            sums[key].count++;
-          });
+      var addSuggestions = [];
+      if (addQ.trim()) {
+        var lq = addQ.trim().toLowerCase();
+        var scored = [];
+        for (var i = 0; i < BALL_SPECIALS.length; i++) {
+          var s = scoreMatch(lq, BALL_SPECIALS[i][0]);
+          if (s >= 0) scored.push({name: BALL_SPECIALS[i][0], score: s});
         }
-        return Object.values(sums).sort((a, b) => b.sum - a.sum);
-      }, [balls]);
+        scored.sort(function(a,b){ return b.score - a.score; });
+        addSuggestions = scored.slice(0, 8);
+      }
 
-      const normalTotal = useMemo(() => {
-        return balls.reduce((acc, { name }) => {
-          const t = TRADE_VALUES.find(x => x.name === name);
-          return acc + (t ? parseFloat(t.value) || 0 : 0);
-        }, 0);
-      }, [balls]);
-
-      if (phase === 'input') {
+      if (preview === null) {
         return (
           <div className="p-3 space-y-3">
-            <p className="text-xs text-slate-600 leading-relaxed">Paste any list of ball names — commas, newlines, any format.</p>
-            <textarea
-              className="inp w-full text-sm resize-none"
-              rows={6}
-              placeholder={"Roman Empire, British Empire\nMongol Empire; Soviet Union"}
-              value={inputText}
-              onChange={e => setInputText(e.target.value)}
-              style={{fontFamily:'inherit'}}
-            />
-            <button onClick={runMatch} disabled={!inputText.trim()}
-                    className="btn w-full py-2 text-xs font-semibold"
-                    style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.4)',
-                            color:'#A78BFA',opacity:inputText.trim()?1:0.5}}>
+            <p className="text-xs text-slate-600">Paste ball names — any format, abbreviations ok (e.g. "brit e", "ko scotland").</p>
+            <textarea className="inp w-full text-sm resize-none" rows={6}
+              placeholder={"Roman Empire, British Empire\nko scotland; soviet u\nbrit e, mongol e"}
+              value={text} onChange={function(e){ setText(e.target.value); }}
+              style={{fontFamily:'inherit'}} />
+            <button onClick={doMatch} className="btn w-full py-2 text-xs font-semibold"
+                    style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.4)',color:'#A78BFA',
+                            opacity:text.trim()?1:0.4}}>
               ✨ Match balls
             </button>
           </div>
         );
       }
 
+      var sums = {};
+      var normalSum = 0;
+      for (var bi = 0; bi < preview.length; bi++) {
+        var brow = preview[bi].row;
+        var bname = preview[bi].name;
+        for (var si = 0; si < SPECIAL_KEYS.length; si++) {
+          var val = brow[si + 1];
+          if (val === null) continue;
+          var key = SPECIAL_KEYS[si];
+          if (!sums[key]) sums[key] = {key: key, label: SPECIAL_LABELS[key], sum: 0, count: 0};
+          sums[key].sum += parseFloat(val);
+          sums[key].count++;
+        }
+        var tv = TRADE_VALUES.find(function(x){ return x.name === bname; });
+        if (tv) normalSum += parseFloat(tv.value) || 0;
+      }
+      var totalChips = Object.values(sums).sort(function(a,b){ return b.sum - a.sum; });
+
       return (
-        <div className="p-3 space-y-3" onClick={() => dropOpen && setDropOpen(false)}>
+        <div className="p-3 space-y-3">
           <div className="flex items-center gap-2">
-            <button onClick={()=>setPhase('input')} className="btn px-3 py-1 text-xs text-slate-500"
+            <button onClick={function(){ setPreview(null); }}
+                    className="btn px-3 py-1 text-xs text-slate-500"
                     style={{background:'var(--s2)',border:'1px solid var(--border)'}}>← Back</button>
-            <span className="text-xs text-slate-500">Matched {balls.length} ball{balls.length!==1?'s':''}</span>
+            <span className="text-xs text-slate-500">{preview.length} ball{preview.length!==1?'s':''} matched</span>
           </div>
 
-          {/* Ball list */}
           <div className="space-y-1.5">
-            {balls.map(({name, row}) => {
-              const specials = SPECIAL_KEYS.map((key,i) => ({key, label:SPECIAL_LABELS[key], value:row[i+1]})).filter(s => s.value !== null);
-              const trade = TRADE_VALUES.find(t => t.name === name);
+            {preview.map(function(b) {
+              var specials = [];
+              for (var si = 0; si < SPECIAL_KEYS.length; si++) {
+                var v = b.row[si + 1];
+                if (v !== null) specials.push({key: SPECIAL_KEYS[si], label: SPECIAL_LABELS[SPECIAL_KEYS[si]], value: v});
+              }
+              var tv = TRADE_VALUES.find(function(x){ return x.name === b.name; });
               return (
-                <div key={name} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)'}}>
+                <div key={b.name} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)'}}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-emerald-400 text-xs">✓</span>
-                    <span className="text-xs font-semibold text-white flex-1">{name}</span>
-                    {trade && <span className="text-xs text-slate-500">{trade.value}</span>}
-                    <button onClick={()=>removeBall(name)} className="text-xs text-slate-600 hover:text-red-400 ml-1">✕</button>
+                    <span className="text-xs font-semibold text-white flex-1">{b.name}</span>
+                    {tv && <span className="text-xs text-slate-500">{tv.value}</span>}
+                    <button onClick={function(){ removeBall(b.name); }}
+                            className="text-xs text-slate-600 hover:text-red-400">✕</button>
                   </div>
                   {specials.length > 0
                     ? <div className="flex flex-wrap gap-1">
-                        {specials.map(s => {
-                          const vc = specialChipColor(s.value);
+                        {specials.map(function(s) {
+                          var vc = specialChipColor(s.value);
                           return (
                             <span key={s.key} className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
                                   style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
@@ -2661,47 +2671,46 @@
             })}
           </div>
 
-          {/* Manual add */}
-          <div className="relative" onClick={e => e.stopPropagation()}>
+          <div>
             <input className="inp text-xs w-full" placeholder="+ Add a ball manually…"
-                   value={addQ}
-                   onChange={e => { setAddQ(e.target.value); setDropOpen(true); }}
-                   onFocus={() => setDropOpen(true)} />
-            {dropOpen && addResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 rounded-lg z-10 overflow-hidden"
-                   style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
-                {addResults.map(r => (
-                  <button key={r.name} className="w-full text-left px-3 py-1.5 text-xs text-white hover:bg-white/5"
-                          onClick={() => addBall(r.name)}>
-                    {r.name}{balls.some(b=>b.name===r.name) ? ' ✓' : ''}
-                  </button>
-                ))}
+                   value={addQ} onChange={function(e){ setAddQ(e.target.value); }} />
+            {addSuggestions.length > 0 && (
+              <div className="mt-1 rounded-lg overflow-hidden" style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
+                {addSuggestions.map(function(r) {
+                  var already = preview.some(function(b){ return b.name === r.name; });
+                  return (
+                    <button key={r.name} className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/5"
+                            style={{color: already ? '#34d399' : 'white'}}
+                            onClick={function(){ addBall(r.name); }}>
+                      {r.name}{already ? ' ✓' : ''}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {/* Totals */}
-          {balls.length > 0 && (
+          {preview.length > 0 && (
             <div className="rounded-xl p-3" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
-              <p className="text-xs font-semibold text-white mb-2">Total across {balls.length} ball{balls.length!==1?'s':''}</p>
-              {normalTotal > 0 && (
+              <p className="text-xs font-semibold text-white mb-2">Total — {preview.length} ball{preview.length!==1?'s':''}</p>
+              {normalSum > 0 && (
                 <div className="mb-2">
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border"
                         style={{background:'rgba(245,158,11,.12)',borderColor:'rgba(245,158,11,.35)',color:'#fcd34d'}}>
-                    {+normalTotal.toPrecision(3)} T1s (normal)
+                    {+normalSum.toPrecision(3)} T1s
                   </span>
                 </div>
               )}
               <div className="flex flex-wrap gap-2">
-                {totals.map(t => {
-                  const vc = specialChipColor(String(t.sum));
+                {totalChips.map(function(t) {
+                  var vc = specialChipColor(String(t.sum));
                   return (
                     <div key={t.key} className="flex flex-col items-center gap-0.5">
                       <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
                             style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
                         {t.label}: {+t.sum.toPrecision(4)}
                       </span>
-                      <span className="text-xs text-slate-600">{t.count}/{balls.length}</span>
+                      <span className="text-xs text-slate-600">{t.count}/{preview.length}</span>
                     </div>
                   );
                 })}
