@@ -2537,13 +2537,13 @@
     }
 
     function CalculatorTab() {
-      const [inputText, setInputText] = React.useState('');
-      const [phase, setPhase] = React.useState('input'); // 'input' | 'results'
-      const [confirmed, setConfirmed] = React.useState([]);   // [{name, row}]
-      const [unsure, setUnsure] = React.useState([]);         // [{raw, suggestion:{name,row}|null}]
-      const [manualPicks, setManualPicks] = React.useState({}); // raw → name
-      const [searches, setSearches] = React.useState({});       // raw → searchText
-      const [openDrop, setOpenDrop] = React.useState(null);
+      const [inputText, setInputText] = useState('');
+      const [phase, setPhase] = useState('input');
+      const [confirmed, setConfirmed] = useState([]);
+      const [unsure, setUnsure] = useState([]);
+      const [manualPicks, setManualPicks] = useState({});
+      const [searches, setSearches] = useState({});
+      const [openDrop, setOpenDrop] = useState(null);
 
       const ABBR = {ko:'kingdom of',e:'empire',r:'republic of',d:'dynasty',k:'kingdom',u:'union',c:'confederation'};
       function expandAbbr(q) {
@@ -2552,26 +2552,43 @@
 
       function matchSegment(segment) {
         const expanded = expandAbbr(segment);
-        let bestRow = null, bestScore = -Infinity;
+        // Pass 1: scoreMatch — fast, handles exact/contains/token matching
+        let bestRow = null, bestScore = -1;
         for (const row of BALL_SPECIALS) {
           const s = scoreMatch(expanded, row[0]);
           if (s > bestScore) { bestScore = s; bestRow = row; }
         }
-        return bestRow ? { name: bestRow[0], row: bestRow, score: bestScore } : null;
+        // Score 40 = all tokens matched → confident enough
+        if (bestRow && bestScore >= 40) return { name: bestRow[0], row: bestRow, score: bestScore, confident: true };
+        // Pass 2: Levenshtein slug fallback for typos / short abbreviations
+        const sl = slugify(expanded);
+        let levRow = null, levDist = Infinity;
+        for (const row of BALL_SPECIALS) {
+          const d = levenshtein(sl, slugify(row[0]));
+          if (d < levDist) { levDist = d; levRow = row; }
+        }
+        const confident = levDist <= 3;
+        const guess = levRow || bestRow;
+        return guess ? { name: guess[0], row: guess, score: bestScore, confident } : null;
       }
 
       function runMatch() {
-        const segments = inputText.split(/[\n,;|]+/).map(s => s.trim()).filter(s => s.length > 0);
-        const conf = [], uns = [];
-        for (const seg of segments) {
-          const m = matchSegment(seg);
-          if (m && m.score >= 60) conf.push({ name: m.name, row: m.row });
-          else uns.push({ raw: seg, suggestion: m });
+        try {
+          const segments = inputText.split(/[\n,;|·•\t]+/).map(s => s.trim()).filter(s => s.length > 0);
+          const conf = [], uns = [];
+          for (const seg of segments) {
+            const m = matchSegment(seg);
+            if (m && m.confident) conf.push({ name: m.name, row: m.row });
+            else uns.push({ raw: seg, suggestion: m });
+          }
+          setConfirmed(conf); setUnsure(uns); setManualPicks({}); setSearches({}); setOpenDrop(null); setPhase('results');
+        } catch(e) {
+          console.error('CalculatorTab runMatch error:', e);
+          setPhase('results');
         }
-        setConfirmed(conf); setUnsure(uns); setManualPicks({}); setSearches({}); setOpenDrop(null); setPhase('results');
       }
 
-      const allResolved = React.useMemo(() => {
+      const allResolved = useMemo(() => {
         const result = [...confirmed];
         for (const u of unsure) {
           const pick = manualPicks[u.raw];
@@ -2580,7 +2597,7 @@
         return result;
       }, [confirmed, unsure, manualPicks]);
 
-      const totals = React.useMemo(() => {
+      const totals = useMemo(() => {
         const sums = {};
         for (const { row } of allResolved) {
           SPECIAL_KEYS.forEach((key, i) => {
@@ -2594,7 +2611,7 @@
         return Object.values(sums).sort((a, b) => b.sum - a.sum);
       }, [allResolved]);
 
-      const normalTotal = React.useMemo(() => {
+      const normalTotal = useMemo(() => {
         return allResolved.reduce((acc, { name }) => {
           const t = TRADE_VALUES.find(x => x.name === name);
           return acc + (t ? parseFloat(t.value) || 0 : 0);
