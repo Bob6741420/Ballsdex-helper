@@ -2613,13 +2613,14 @@
           var bestScore = smScore, bestRow = smRow;
           if (acrScore > bestScore) { bestScore = acrScore; bestRow = acrRow; }
 
-          // Fallback: word-level Levenshtein for typos ("lenister"→Leinster, "aremenian"→Armenian)
-          if (bestScore < 0) {
+          // Levenshtein: runs for no-match AND weak partial-token matches (<40)
+          // Prevents "aremenian empire" scoring 10 via "empire" token and landing on British Empire
+          if (bestScore < 40) {
             var qWords = expanded.toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).filter(function(w){ return w.length >= 3; });
             if (qWords.length > 0) {
               var maxAllowed = 0;
               for (var wi0 = 0; wi0 < qWords.length; wi0++) maxAllowed += Math.max(2, Math.floor(qWords[wi0].length * 0.35));
-              var bestDist = Infinity;
+              var levDist = Infinity, levRow = null;
               for (var ki2 = 0; ki2 < BALL_SPECIALS.length; ki2++) {
                 var bwords = BALL_SPECIALS[ki2][0].toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).filter(function(w){ return w.length >= 2; });
                 var totalDist = 0;
@@ -2631,9 +2632,15 @@
                   }
                   totalDist += minD;
                 }
-                if (totalDist < bestDist) { bestDist = totalDist; bestRow = BALL_SPECIALS[ki2]; }
+                if (totalDist < levDist) { levDist = totalDist; levRow = BALL_SPECIALS[ki2]; }
               }
-              if (bestDist <= maxAllowed) bestScore = 0; else bestRow = null;
+              if (levDist <= maxAllowed) {
+                bestScore = bestScore < 0 ? 0 : 35;
+                bestRow = levRow;
+              } else if (bestScore < 0) {
+                bestRow = null;
+              }
+              // If levDist > maxAllowed and bestScore 0–39: keep the weak token match
             }
           }
 
