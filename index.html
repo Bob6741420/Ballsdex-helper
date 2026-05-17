@@ -2539,67 +2539,45 @@
     function CalculatorTab() {
       const [inputText, setInputText] = useState('');
       const [phase, setPhase] = useState('input');
-      const [confirmed, setConfirmed] = useState([]);
-      const [unsure, setUnsure] = useState([]);
-      const [manualPicks, setManualPicks] = useState({});
-      const [searches, setSearches] = useState({});
-      const [openDrop, setOpenDrop] = useState(null);
-
-      const ABBR = {ko:'kingdom of',e:'empire',r:'republic of',d:'dynasty',k:'kingdom',u:'union',c:'confederation'};
-      function expandAbbr(q) {
-        return q.toLowerCase().trim().split(/\s+/).map(w => ABBR[w] || w).join(' ');
-      }
-
-      function matchSegment(segment) {
-        const expanded = expandAbbr(segment);
-        // Pass 1: scoreMatch — fast, handles exact/contains/token matching
-        let bestRow = null, bestScore = -1;
-        for (const row of BALL_SPECIALS) {
-          const s = scoreMatch(expanded, row[0]);
-          if (s > bestScore) { bestScore = s; bestRow = row; }
-        }
-        // Score 40 = all tokens matched → confident enough
-        if (bestRow && bestScore >= 40) return { name: bestRow[0], row: bestRow, score: bestScore, confident: true };
-        // Pass 2: Levenshtein slug fallback for typos / short abbreviations
-        const sl = slugify(expanded);
-        let levRow = null, levDist = Infinity;
-        for (const row of BALL_SPECIALS) {
-          const d = levenshtein(sl, slugify(row[0]));
-          if (d < levDist) { levDist = d; levRow = row; }
-        }
-        const confident = levDist <= 3;
-        const guess = levRow || bestRow;
-        return guess ? { name: guess[0], row: guess, score: bestScore, confident } : null;
-      }
+      const [balls, setBalls] = useState([]); // [{name, row}]
+      const [addQ, setAddQ] = useState('');
+      const [dropOpen, setDropOpen] = useState(false);
 
       function runMatch() {
-        try {
-          const segments = inputText.split(/[\n,;|·•\t]+/).map(s => s.trim()).filter(s => s.length > 0);
-          const conf = [], uns = [];
-          for (const seg of segments) {
-            const m = matchSegment(seg);
-            if (m && m.confident) conf.push({ name: m.name, row: m.row });
-            else uns.push({ raw: seg, suggestion: m });
-          }
-          setConfirmed(conf); setUnsure(uns); setManualPicks({}); setSearches({}); setOpenDrop(null); setPhase('results');
-        } catch(e) {
-          console.error('CalculatorTab runMatch error:', e);
-          setPhase('results');
-        }
+        const ballNames = BALL_SPECIALS.map(r => r[0]);
+        const { matched } = matchBalls(inputText, ballNames);
+        const rows = matched.map(name => {
+          const row = BALL_SPECIALS.find(r => r[0] === name);
+          return row ? { name, row } : null;
+        }).filter(Boolean);
+        setBalls(rows);
+        setPhase('results');
       }
 
-      const allResolved = useMemo(() => {
-        const result = [...confirmed];
-        for (const u of unsure) {
-          const pick = manualPicks[u.raw];
-          if (pick) { const row = BALL_SPECIALS.find(r => r[0] === pick); if (row) result.push({ name: pick, row }); }
-        }
-        return result;
-      }, [confirmed, unsure, manualPicks]);
+      function addBall(name) {
+        if (balls.some(b => b.name === name)) return;
+        const row = BALL_SPECIALS.find(r => r[0] === name);
+        if (row) setBalls(prev => [...prev, { name, row }]);
+        setAddQ(''); setDropOpen(false);
+      }
+
+      function removeBall(name) {
+        setBalls(prev => prev.filter(b => b.name !== name));
+      }
+
+      const addResults = useMemo(() => {
+        if (!addQ.trim()) return [];
+        const lq = addQ.trim().toLowerCase();
+        return BALL_SPECIALS
+          .map(row => ({ name: row[0], score: scoreMatch(lq, row[0]) }))
+          .filter(r => r.score >= 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 8);
+      }, [addQ]);
 
       const totals = useMemo(() => {
         const sums = {};
-        for (const { row } of allResolved) {
+        for (const { row } of balls) {
           SPECIAL_KEYS.forEach((key, i) => {
             const val = row[i + 1];
             if (val === null) return;
@@ -2609,150 +2587,100 @@
           });
         }
         return Object.values(sums).sort((a, b) => b.sum - a.sum);
-      }, [allResolved]);
+      }, [balls]);
 
       const normalTotal = useMemo(() => {
-        return allResolved.reduce((acc, { name }) => {
+        return balls.reduce((acc, { name }) => {
           const t = TRADE_VALUES.find(x => x.name === name);
           return acc + (t ? parseFloat(t.value) || 0 : 0);
         }, 0);
-      }, [allResolved]);
-
-      function searchResults(raw) {
-        const q = (searches[raw] || '').trim();
-        const expanded = expandAbbr(q || raw);
-        return BALL_SPECIALS
-          .map(row => ({ name: row[0], score: scoreMatch(expanded, row[0]) }))
-          .filter(r => r.score >= 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6);
-      }
+      }, [balls]);
 
       if (phase === 'input') {
         return (
           <div className="p-3 space-y-3">
-            <p className="text-xs text-slate-600 leading-relaxed">Paste any list of balls — commas, newlines, semicolons, or pipes. AI will match each one.</p>
+            <p className="text-xs text-slate-600 leading-relaxed">Paste any list of ball names — commas, newlines, any format.</p>
             <textarea
               className="inp w-full text-sm resize-none"
               rows={6}
-              placeholder={"Roman Empire, British Empire\nMongol Empire; Soviet Union\nusa, uk, germany"}
+              placeholder={"Roman Empire, British Empire\nMongol Empire; Soviet Union"}
               value={inputText}
               onChange={e => setInputText(e.target.value)}
               style={{fontFamily:'inherit'}}
             />
-            <button
-              onClick={runMatch}
-              disabled={!inputText.trim()}
-              className="btn w-full py-2 text-xs font-semibold"
-              style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.4)',color:'#A78BFA',opacity:inputText.trim()?1:0.5}}>
+            <button onClick={runMatch} disabled={!inputText.trim()}
+                    className="btn w-full py-2 text-xs font-semibold"
+                    style={{background:'var(--indigo-dim)',border:'1px solid rgba(99,102,241,.4)',
+                            color:'#A78BFA',opacity:inputText.trim()?1:0.5}}>
               ✨ Match balls
             </button>
           </div>
         );
       }
 
-      // Results phase
       return (
-        <div className="p-3 space-y-3" onClick={() => openDrop && setOpenDrop(null)}>
-          <button onClick={()=>setPhase('input')} className="btn px-3 py-1 text-xs text-slate-500"
-                  style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
-            ← Back
-          </button>
+        <div className="p-3 space-y-3" onClick={() => dropOpen && setDropOpen(false)}>
+          <div className="flex items-center gap-2">
+            <button onClick={()=>setPhase('input')} className="btn px-3 py-1 text-xs text-slate-500"
+                    style={{background:'var(--s2)',border:'1px solid var(--border)'}}>← Back</button>
+            <span className="text-xs text-slate-500">Matched {balls.length} ball{balls.length!==1?'s':''}</span>
+          </div>
 
-          {/* Confirmed */}
-          {confirmed.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-500 mb-1.5">Matched {confirmed.length} ball{confirmed.length!==1?'s':''}</p>
-              <div className="space-y-1.5">
-                {confirmed.map(({name, row}) => {
-                  const specials = SPECIAL_KEYS.map((key,i)=>({key,label:SPECIAL_LABELS[key],value:row[i+1]})).filter(s=>s.value!==null);
-                  const trade = TRADE_VALUES.find(t => t.name === name);
-                  return (
-                    <div key={name} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)'}}>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-emerald-400 text-xs">✓</span>
-                        <span className="text-xs font-semibold text-white">{name}</span>
-                        {trade && <span className="text-xs text-slate-500">{trade.value}</span>}
+          {/* Ball list */}
+          <div className="space-y-1.5">
+            {balls.map(({name, row}) => {
+              const specials = SPECIAL_KEYS.map((key,i) => ({key, label:SPECIAL_LABELS[key], value:row[i+1]})).filter(s => s.value !== null);
+              const trade = TRADE_VALUES.find(t => t.name === name);
+              return (
+                <div key={name} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)'}}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-emerald-400 text-xs">✓</span>
+                    <span className="text-xs font-semibold text-white flex-1">{name}</span>
+                    {trade && <span className="text-xs text-slate-500">{trade.value}</span>}
+                    <button onClick={()=>removeBall(name)} className="text-xs text-slate-600 hover:text-red-400 ml-1">✕</button>
+                  </div>
+                  {specials.length > 0
+                    ? <div className="flex flex-wrap gap-1">
+                        {specials.map(s => {
+                          const vc = specialChipColor(s.value);
+                          return (
+                            <span key={s.key} className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
+                                  style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
+                              {s.label}: {s.value}
+                            </span>
+                          );
+                        })}
                       </div>
-                      {specials.length > 0
-                        ? <div className="flex flex-wrap gap-1">
-                            {specials.map(s => {
-                              const vc = specialChipColor(s.value);
-                              return (
-                                <span key={s.key} className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-lg border"
-                                      style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
-                                  {s.label}: {s.value}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        : <p className="text-xs text-slate-600">No special values</p>
-                      }
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                    : <p className="text-xs text-slate-600">No special values</p>
+                  }
+                </div>
+              );
+            })}
+          </div>
 
-          {/* Unsure */}
-          {unsure.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-500 mb-1.5">Unsure ({unsure.length}) — pick the right ball:</p>
-              <div className="space-y-2">
-                {unsure.map(u => {
-                  const picked = manualPicks[u.raw];
-                  return (
-                    <div key={u.raw} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)',border:'1px solid rgba(245,158,11,.3)'}}>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-amber-400 text-xs">?</span>
-                        <span className="text-xs text-amber-400 font-medium">"{u.raw}"</span>
-                        {u.suggestion && !picked && <span className="text-xs text-slate-600">→ guessed: {u.suggestion.name}</span>}
-                      </div>
-                      {picked ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-emerald-400">✓ {picked}</span>
-                          <button onClick={()=>{const n={...manualPicks};delete n[u.raw];setManualPicks(n);}} className="text-xs text-slate-500 hover:text-white">✕</button>
-                        </div>
-                      ) : (
-                        <div className="relative" onClick={e => e.stopPropagation()}>
-                          <input
-                            className="inp text-xs w-full"
-                            placeholder={u.suggestion ? `Search (guessed: ${u.suggestion.name})` : 'Search ball name…'}
-                            value={searches[u.raw] || ''}
-                            onChange={e => { setSearches(p=>({...p,[u.raw]:e.target.value})); setOpenDrop(u.raw); }}
-                            onFocus={() => setOpenDrop(u.raw)}
-                          />
-                          {openDrop === u.raw && (
-                            <div className="absolute left-0 right-0 top-full mt-1 rounded-lg z-10 overflow-hidden"
-                                 style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
-                              {u.suggestion && !searches[u.raw] && (
-                                <button className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/5 text-amber-400"
-                                        onClick={()=>{ setManualPicks(p=>({...p,[u.raw]:u.suggestion.name})); setOpenDrop(null); }}>
-                                  ★ Use guess: {u.suggestion.name}
-                                </button>
-                              )}
-                              {searchResults(u.raw).map(r => (
-                                <button key={r.name} className="w-full text-left px-3 py-1.5 text-xs text-white hover:bg-white/5"
-                                        onClick={()=>{ setManualPicks(p=>({...p,[u.raw]:r.name})); setOpenDrop(null); setSearches(p=>({...p,[u.raw]:''})); }}>
-                                  {r.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          {/* Manual add */}
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <input className="inp text-xs w-full" placeholder="+ Add a ball manually…"
+                   value={addQ}
+                   onChange={e => { setAddQ(e.target.value); setDropOpen(true); }}
+                   onFocus={() => setDropOpen(true)} />
+            {dropOpen && addResults.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-1 rounded-lg z-10 overflow-hidden"
+                   style={{background:'var(--s1)',border:'1px solid var(--border)'}}>
+                {addResults.map(r => (
+                  <button key={r.name} className="w-full text-left px-3 py-1.5 text-xs text-white hover:bg-white/5"
+                          onClick={() => addBall(r.name)}>
+                    {r.name}{balls.some(b=>b.name===r.name) ? ' ✓' : ''}
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Totals */}
-          {allResolved.length > 0 ? (
+          {balls.length > 0 && (
             <div className="rounded-xl p-3" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
-              <p className="text-xs font-semibold text-white mb-2">Total across {allResolved.length} ball{allResolved.length!==1?'s':''}</p>
+              <p className="text-xs font-semibold text-white mb-2">Total across {balls.length} ball{balls.length!==1?'s':''}</p>
               {normalTotal > 0 && (
                 <div className="mb-2">
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border"
@@ -2770,14 +2698,12 @@
                             style={{background:vc.bg,borderColor:vc.border,color:vc.color}}>
                         {t.label}: {+t.sum.toPrecision(4)}
                       </span>
-                      <span className="text-xs text-slate-600">{t.count}/{allResolved.length}</span>
+                      <span className="text-xs text-slate-600">{t.count}/{balls.length}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
-          ) : (
-            <p className="text-center text-slate-600 text-sm py-2">No balls resolved yet — resolve the unsure items above.</p>
           )}
         </div>
       );
