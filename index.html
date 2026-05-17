@@ -2543,9 +2543,12 @@
       const [addQ, setAddQ] = useState('');
       const [dropOpen, setDropOpen] = useState(false);
 
+      const CALC_ABBR = {ko:'kingdom of',e:'empire',r:'republic of',d:'dynasty',k:'kingdom',u:'union',c:'confederation',emp:'empire',rep:'republic'};
+
       function runMatch() {
+        const expanded = inputText.replace(/\b([a-zA-Z]+)\b/g, w => CALC_ABBR[w.toLowerCase()] || w);
         const ballNames = BALL_SPECIALS.map(r => r[0]);
-        const { matched } = matchBalls(inputText, ballNames);
+        const { matched } = matchBalls(expanded, ballNames);
         const rows = matched.map(name => {
           const row = BALL_SPECIALS.find(r => r[0] === name);
           return row ? { name, row } : null;
