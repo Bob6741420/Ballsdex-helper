@@ -2557,18 +2557,22 @@
       }
 
       function doMatch() {
-        var expanded = expandInput(text);
-        var names = [];
-        for (var i = 0; i < BALL_SPECIALS.length; i++) names.push(BALL_SPECIALS[i][0]);
-        var result = matchBalls(expanded, names);
         var rows = [];
-        for (var j = 0; j < result.matched.length; j++) {
-          var name = result.matched[j];
-          var row = null;
-          for (var k = 0; k < BALL_SPECIALS.length; k++) {
-            if (BALL_SPECIALS[k][0] === name) { row = BALL_SPECIALS[k]; break; }
+        var seen = {};
+        var lines = text.split('\n');
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li].trim();
+          if (!line) continue;
+          var expanded = expandInput(line);
+          var bestRow = null, bestScore = -1;
+          for (var ki = 0; ki < BALL_SPECIALS.length; ki++) {
+            var sc = scoreMatch(expanded, BALL_SPECIALS[ki][0]);
+            if (sc > bestScore) { bestScore = sc; bestRow = BALL_SPECIALS[ki]; }
           }
-          if (row) rows.push({name: name, row: row});
+          if (bestScore >= 0 && bestRow && !seen[bestRow[0]]) {
+            seen[bestRow[0]] = true;
+            rows.push({name: bestRow[0], row: bestRow});
+          }
         }
         setPreview(rows);
         setAddQ('');
