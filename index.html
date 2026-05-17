@@ -2552,8 +2552,23 @@
 
       const CALC_ABBR = {'ko':'kingdom of','e':'empire','r':'republic of','ro':'republic of','d':'dynasty','k':'kingdom','u':'union','c':'confederation'};
 
+      // Explicit aliases that acronym/substring matching can't reliably catch
+      const BALL_ALIASES = {
+        'usa':'United States of America','ussr':'Soviet Union','drc':'DR Congo',
+        'prc':'China','plc':'Polish-Lithuanian Commonwealth','ah':'Austria-Hungary',
+        'uk':'United Kingdom','nz':'New Zealand','sa':'South Africa','uae':'United Arab Emirates',
+        'sk':'South Korea','nk':'North Korea','ger':'German Empire','haps':'Habsburg Empire',
+      };
+
       function expandInput(s) {
         return s.replace(/\b([a-z]+)\b/gi, function(w){ return CALC_ABBR[w.toLowerCase()] || w; });
+      }
+
+      // Parse trade value handling both "0.5 T1s" and "5 commons" (1 T1 = 800 commons)
+      function parseTradeVal(v) {
+        if (!v) return 0;
+        var n = parseFloat(v) || 0;
+        return /common/i.test(v) ? n / 800 : n;
       }
 
       function doMatch() {
@@ -2563,7 +2578,8 @@
         for (var li = 0; li < parts.length; li++) {
           var line = parts[li].trim();
           if (!line) continue;
-          var expanded = expandInput(line);
+          var lineKey = line.toLowerCase().replace(/[^a-z]/g, '');
+          var expanded = BALL_ALIASES[lineKey] || expandInput(line);
 
           // Primary: scoreMatch (handles prefixes, substrings, abbreviation expansions)
           var bestRow = null, bestScore = -1;
@@ -2672,7 +2688,7 @@
           sums[key].count++;
         }
         var tv = TRADE_VALUES.find(function(x){ return x.name === bname; });
-        if (tv) normalSum += parseFloat(tv.value) || 0;
+        if (tv) normalSum += parseTradeVal(tv.value);
       }
       var totalChips = Object.values(sums).sort(function(a,b){ return b.sum - a.sum; });
 
@@ -2744,10 +2760,13 @@
             <div className="rounded-xl p-3 space-y-3" style={{background:'var(--s2)',border:'1px solid var(--border)'}}>
               <div>
                 <p className="text-xs text-slate-500 mb-1">{preview.length} ball{preview.length!==1?'s':''} · combined value</p>
-                <span className="text-lg font-bold px-3 py-1 rounded-lg border"
-                      style={{background:'rgba(245,158,11,.15)',borderColor:'rgba(245,158,11,.5)',color:'#fcd34d'}}>
-                  {+normalSum.toPrecision(4)} T1s
-                </span>
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="text-lg font-bold px-3 py-1 rounded-lg border"
+                        style={{background:'rgba(245,158,11,.15)',borderColor:'rgba(245,158,11,.5)',color:'#fcd34d'}}>
+                    {+normalSum.toPrecision(4)} T1s
+                  </span>
+                  <span className="text-sm text-slate-400">≈ {+(normalSum * 800).toPrecision(4)} commons</span>
+                </div>
               </div>
               {totalChips.length > 0 && (
                 <div>
