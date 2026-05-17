@@ -2588,6 +2588,13 @@
             var sc = scoreMatch(expanded, BALL_SPECIALS[ki][0]);
             if (sc > smScore) { smScore = sc; smRow = BALL_SPECIALS[ki]; }
           }
+          // Reject mid-word substring hits (score 60): "roc" must not match "mo-ROC-co"
+          // Query must appear at the start of a word in the ball name
+          if (smScore === 60 && smRow) {
+            var _n = smRow[0].toLowerCase().replace(/[^\w\s]/g, ' ');
+            var _q = expanded.toLowerCase().trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (!new RegExp('(^|\\s)' + _q).test(_n)) { smScore = -1; smRow = null; }
+          }
 
           // Acronym match runs independently — score 70 beats substring(60) but loses to prefix/exact(80+)
           // This ensures "roc"→Republic of China beats "roc" substring hit in "Morocco"
