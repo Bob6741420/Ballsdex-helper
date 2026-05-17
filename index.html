@@ -2572,8 +2572,9 @@
             if (sc > bestScore) { bestScore = sc; bestRow = BALL_SPECIALS[ki]; }
           }
 
-          // Acronym match: "ukosn" → "United Kingdoms of Sweden & Norway"
-          if (bestScore < 0) {
+          // Acronym match: "je"→Japanese Empire, "roc"→Republic of China, "ukosn"→United Kingdoms of Sweden & Norway
+          // Runs when bestScore < 70 so it overrides false substring hits (e.g. "roc" in "Morocco" scores 60)
+          if (bestScore < 70) {
             var qAcr = expanded.toLowerCase().replace(/[^a-z]/g, '');
             for (var kai = 0; kai < BALL_SPECIALS.length; kai++) {
               var acr = BALL_SPECIALS[kai][0].toLowerCase().split(/\s+/).map(function(w){ return /[a-z]/.test(w[0]) ? w[0] : ''; }).join('');
