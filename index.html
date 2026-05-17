@@ -2536,6 +2536,15 @@
       );
     }
 
+    function specialChipColor(v) {
+      const n = parseFloat(v);
+      if (n >= 1000) return { bg:'rgba(167,139,250,.15)', border:'rgba(167,139,250,.4)', color:'#c4b5fd' };
+      if (n >= 100)  return { bg:'rgba(245,158,11,.15)',  border:'rgba(245,158,11,.4)',  color:'#fcd34d' };
+      if (n >= 10)   return { bg:'rgba(99,102,241,.15)',  border:'rgba(99,102,241,.4)',  color:'#a5b4fc' };
+      if (n >= 1)    return { bg:'rgba(59,130,246,.15)',  border:'rgba(59,130,246,.4)',  color:'#93c5fd' };
+      return         { bg:'rgba(16,185,129,.12)',  border:'rgba(16,185,129,.35)',  color:'#6ee7b7' };
+    }
+
     function CalculatorTab() {
       const [text, setText] = useState('');
       const [preview, setPreview] = useState(null); // null | [{name, row}]
@@ -2769,14 +2778,6 @@
         return       { bg:'rgba(100,116,139,.12)', border:'rgba(100,116,139,.35)', color:'#94a3b8' };
       }
 
-      function specialChipColor(v) {
-        const n = parseFloat(v);
-        if (n >= 1000) return { bg:'rgba(167,139,250,.15)', border:'rgba(167,139,250,.4)', color:'#c4b5fd' };
-        if (n >= 100)  return { bg:'rgba(245,158,11,.15)',  border:'rgba(245,158,11,.4)',  color:'#fcd34d' };
-        if (n >= 10)   return { bg:'rgba(99,102,241,.15)',  border:'rgba(99,102,241,.4)',  color:'#a5b4fc' };
-        if (n >= 1)    return { bg:'rgba(59,130,246,.15)',  border:'rgba(59,130,246,.4)',  color:'#93c5fd' };
-        return         { bg:'rgba(16,185,129,.12)',  border:'rgba(16,185,129,.35)',  color:'#6ee7b7' };
-      }
 
       const demandColor = { Great:'text-emerald-400', Good:'text-blue-400', Mid:'text-amber-400', Terrible:'text-red-400', Bad:'text-orange-400' };
 
