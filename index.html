@@ -2646,7 +2646,7 @@
 
           if (bestScore >= 0 && bestRow && !seen[bestRow[0]]) {
             seen[bestRow[0]] = true;
-            rows.push({name: bestRow[0], row: bestRow});
+            rows.push({name: bestRow[0], row: bestRow, matchedFrom: line});
           }
         }
         setPreview(rows);
@@ -2735,7 +2735,11 @@
                 <div key={b.name} className="px-3 py-2 rounded-xl" style={{background:'var(--s2)'}}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-emerald-400 text-xs">✓</span>
-                    <span className="text-xs font-semibold text-white flex-1">{b.name}</span>
+                    <span className="text-xs font-semibold text-white flex-1">
+                      {b.matchedFrom && b.matchedFrom.toLowerCase() !== b.name.toLowerCase()
+                        ? <>{b.matchedFrom}<span className="text-slate-500 font-normal">{'>'}</span>{b.name}</>
+                        : b.name}
+                    </span>
                     {tv && <span className="text-xs text-slate-500">{tv.value}</span>}
                     <button onClick={function(){ removeBall(b.name); }}
                             className="text-xs text-slate-600 hover:text-red-400">✕</button>
